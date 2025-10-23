@@ -77,34 +77,111 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
   return (
     <ModelContext.Provider value={model}>
       <FSContext.Provider value={fs}>
-        <div className='flex flex-column' style={{
-            flex: 1,
+        <div style={{
+          display: 'flex',
+          height: '100vh',
+          backgroundColor: '#f8f9fa',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        }}>
+          
+          {/* Left Side - Two Panels */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: '1',
+            gap: '2px',
+            padding: '16px',
+            paddingRight: '8px'
           }}>
-          
-          <PanelSwitcher />
-          
-          <AIPromptPanel />
-    
-          <div className={mode === 'multi' ? 'flex flex-row' : 'flex flex-column'}
-              style={mode === 'multi' ? {flex: 1} : {
-                flex: 1,
-                position: 'relative'
+            
+            {/* Top Left - Code Editor */}
+            <div style={{
+              flex: '1',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              border: '1px solid #e1e5e9',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              overflow: 'hidden',
+              position: 'relative'
+            }}>
+              <div style={{
+                padding: '16px',
+                borderBottom: '1px solid #e1e5e9',
+                backgroundColor: '#f8f9fa',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#495057'
               }}>
+                OpenSCAD Code
+              </div>
+              <div style={{ height: 'calc(100% - 49px)' }}>
+                <EditorPanel 
+                  className="minimal-editor"
+                  style={{ 
+                    height: '100%',
+                    border: 'none',
+                    borderRadius: '0'
+                  }} 
+                />
+              </div>
+            </div>
 
-            <EditorPanel className={`
-              opacity-animated
-              ${layout.mode === 'single' && layout.focus !== 'editor' ? 'opacity-0' : ''}
-              ${layout.mode === 'single' ? 'absolute-fill' : ''}
-            `} style={getPanelStyle('editor')} />
-            <ViewerPanel className={layout.mode === 'single' ? `absolute-fill` : ''} style={getPanelStyle('viewer')} />
-            <CustomizerPanel className={`
-              opacity-animated
-              ${layout.mode === 'single' && layout.focus !== 'customizer' ? 'opacity-0' : ''}
-              ${layout.mode === 'single' ? `absolute-fill` : ''}
-            `} style={getPanelStyle('customizer')} />
+            {/* Bottom Left - AI Prompt */}
+            <div style={{
+              height: '200px',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              border: '1px solid #e1e5e9',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              overflow: 'hidden'
+            }}>
+              <AIPromptPanel 
+                style={{
+                  height: '100%',
+                  margin: '0',
+                  borderRadius: '0'
+                }}
+              />
+            </div>
           </div>
 
-          <Footer />
+          {/* Right Side - 3D Viewer */}
+          <div style={{
+            flex: '1',
+            padding: '16px',
+            paddingLeft: '8px'
+          }}>
+            <div style={{
+              height: '100%',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              border: '1px solid #e1e5e9',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              overflow: 'hidden',
+              position: 'relative'
+            }}>
+              <div style={{
+                padding: '16px',
+                borderBottom: '1px solid #e1e5e9',
+                backgroundColor: '#f8f9fa',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#495057'
+              }}>
+                3D Preview
+              </div>
+              <div style={{ height: 'calc(100% - 49px)' }}>
+                <ViewerPanel 
+                  style={{ 
+                    height: '100%',
+                    border: 'none',
+                    borderRadius: '0'
+                  }} 
+                />
+              </div>
+            </div>
+          </div>
+
           <ConfirmDialog />
         </div>
       </FSContext.Provider>

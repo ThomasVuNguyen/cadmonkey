@@ -130,160 +130,129 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
   };
 
   return (
-    <div className={`ai-prompt-panel ${className ?? ''}`} style={style}>
-      <Card className="ai-prompt-card" style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        border: 'none',
-        borderRadius: '16px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        margin: '0',
-        overflow: 'hidden'
+    <div className={`ai-prompt-panel ${className ?? ''}`} style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '16px',
+      ...style
+    }}>
+      {/* Header */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        marginBottom: '12px',
+        color: '#495057'
       }}>
-        <div style={{ padding: '24px' }}>
-          {/* Header */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '20px',
-            color: 'white'
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '12px',
-              fontSize: '18px'
-            }}>
-              🤖
-            </div>
-            <div>
-              <h3 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>
-                AI OpenSCAD Generator
-              </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: '0.8' }}>
-                Describe your 3D object and watch it come to life
-              </p>
-            </div>
-          </div>
-
-          {/* Input Section */}
-          <div style={{ marginBottom: '16px' }}>
-            <InputTextarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe your 3D object... (e.g., 'a cube', 'a sphere with radius 5', 'a complex geometric shape')"
-              disabled={isLoading}
-              onKeyPress={handleKeyPress}
-              rows={3}
-              style={{
-                width: '100%',
-                borderRadius: '12px',
-                border: '2px solid rgba(255,255,255,0.2)',
-                background: 'rgba(255,255,255,0.1)',
-                color: 'white',
-                fontSize: '16px',
-                padding: '16px',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.3s ease'
-              }}
-              className="ai-prompt-input"
-            />
-          </div>
-
-          {/* Generate Button */}
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Button
-              label={isLoading ? "Generating..." : "Generate OpenSCAD"}
-              icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-magic-wand"}
-              onClick={handleGenerate}
-              disabled={!prompt.trim() || isLoading}
-              className="p-button-primary"
-              style={{
-                flex: 1,
-                height: '48px',
-                borderRadius: '12px',
-                background: isLoading ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.9)',
-                color: isLoading ? 'white' : '#667eea',
-                border: 'none',
-                fontSize: '16px',
-                fontWeight: '600',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
-              }}
-            />
-            
-            {/* Generation Status */}
-            {isGenerating && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                color: 'white',
-                fontSize: '14px',
-                opacity: '0.8'
-              }}>
-                <ProgressSpinner 
-                  style={{ width: '20px', height: '20px', marginRight: '8px' }}
-                  strokeWidth="3"
-                />
-                <span>Streaming...</span>
-              </div>
-            )}
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div style={{ marginTop: '16px' }}>
-              <Message 
-                severity="error" 
-                text={error}
-                style={{
-                  borderRadius: '12px',
-                  background: 'rgba(255,87,87,0.1)',
-                  border: '1px solid rgba(255,87,87,0.3)',
-                  color: '#ff5757'
-                }}
-              />
-            </div>
-          )}
-
-          {/* Tips */}
-          {!isLoading && !prompt && (
-            <div style={{ 
-              marginTop: '16px', 
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '14px',
-              lineHeight: '1.5'
-            }}>
-              <strong>💡 Tips:</strong> Be specific about dimensions, shapes, and features. 
-              Try prompts like "a cube with rounded corners" or "a complex gear mechanism".
-            </div>
-          )}
+        <div style={{
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: '8px',
+          fontSize: '12px'
+        }}>
+          🤖
         </div>
-      </Card>
+        <div>
+          <h4 style={{ margin: '0', fontSize: '14px', fontWeight: '600' }}>
+            AI Generator
+          </h4>
+        </div>
+      </div>
+
+      {/* Input Section */}
+      <div style={{ marginBottom: '12px', flex: 1 }}>
+        <InputTextarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Describe your 3D object..."
+          disabled={isLoading}
+          onKeyPress={handleKeyPress}
+          rows={2}
+          style={{
+            width: '100%',
+            borderRadius: '8px',
+            border: '1px solid #e1e5e9',
+            background: '#f8f9fa',
+            color: '#495057',
+            fontSize: '14px',
+            padding: '12px',
+            resize: 'none',
+            transition: 'all 0.2s ease'
+          }}
+          className="ai-prompt-input"
+        />
+      </div>
+
+      {/* Generate Button */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <Button
+          label={isLoading ? "Generating..." : "Generate"}
+          icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-magic-wand"}
+          onClick={handleGenerate}
+          disabled={!prompt.trim() || isLoading}
+          className="p-button-primary"
+          style={{
+            flex: 1,
+            height: '36px',
+            borderRadius: '8px',
+            background: isLoading ? '#6c757d' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: 'none',
+            fontSize: '14px',
+            fontWeight: '500',
+            transition: 'all 0.2s ease'
+          }}
+        />
+        
+        {/* Generation Status */}
+        {isGenerating && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            color: '#6c757d',
+            fontSize: '12px'
+          }}>
+            <ProgressSpinner 
+              style={{ width: '16px', height: '16px', marginRight: '6px' }}
+              strokeWidth="3"
+            />
+            <span>Streaming...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div style={{ marginTop: '8px' }}>
+          <Message 
+            severity="error" 
+            text={error}
+            style={{
+              borderRadius: '8px',
+              background: '#f8d7da',
+              border: '1px solid #f5c6cb',
+              color: '#721c24',
+              fontSize: '12px'
+            }}
+          />
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`
         .ai-prompt-input::placeholder {
-          color: rgba(255,255,255,0.6);
+          color: #adb5bd;
         }
         
         .ai-prompt-input:focus {
-          border-color: rgba(255,255,255,0.5) !important;
-          box-shadow: 0 0 0 3px rgba(255,255,255,0.1) !important;
-          background: rgba(255,255,255,0.15) !important;
-        }
-        
-        .ai-prompt-card {
-          transition: all 0.3s ease;
-        }
-        
-        .ai-prompt-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+          border-color: #667eea !important;
+          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
+          background: white !important;
         }
       `}</style>
     </div>
