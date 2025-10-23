@@ -69,15 +69,24 @@ export default function ExportButton({className, style}: {className?: string, st
     const exportFormat = state.is2D ? state.params.exportFormat2D : state.params.exportFormat3D;
     const selectedItem = dropdownModel.filter(item => item.data === exportFormat)[0] || dropdownModel[0]!;
 
+  const handleExport = async () => {
+    // If no output or in preview mode, render first
+    if (!state.output || state.output.isPreview) {
+      await model!.render({isPreview: false, now: true});
+    }
+    // Then export
+    model!.export();
+  };
+
   return (
     <div className={className} style={style}>
       <SplitButton 
         label={selectedItem.buttonLabel}
-        disabled={!state.output || state.output.isPreview || state.rendering || state.exporting}
+        disabled={state.rendering || state.exporting}
         icon="pi pi-download" 
         model={dropdownModel}
         severity="secondary"
-        onClick={e => model!.export()}
+        onClick={e => handleExport()}
         className="p-button-sm"
       />
     </div>

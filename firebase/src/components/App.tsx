@@ -11,6 +11,7 @@ import PanelSwitcher from './PanelSwitcher';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import CustomizerPanel from './CustomizerPanel';
 import AIPromptPanel from './AIPromptPanel';
+import ExportButton from './ExportButton';
 
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
@@ -146,9 +147,13 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                 backgroundColor: '#f8f9fa',
                 fontSize: '14px',
                 fontWeight: '600',
-                color: '#495057'
+                color: '#495057',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                3D Preview
+                <span>3D Preview</span>
+                <ExportButton />
               </div>
               <div style={{ flex: '1' }}>
                 <ViewerPanel 
@@ -181,8 +186,8 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
             />
           </div>
 
-          <Footer />
-          <ConfirmDialog />
+                  {/* <Footer /> */} {/* Commented out - export functionality moved to 3D Preview header */}
+                  <ConfirmDialog />
         </div>
       </FSContext.Provider>
     </ModelContext.Provider>
