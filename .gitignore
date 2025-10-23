@@ -7,3 +7,10 @@ public/openscad.wasm
 src/wasm
 package-lock.json
 .DS_Store
+
+
+# backend
+
+modal/venv/
+modal/__pycache__/
+*.gguf
