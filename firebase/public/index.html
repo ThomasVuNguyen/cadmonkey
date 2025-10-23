@@ -149,9 +149,9 @@
       opacity: 0.8;
       cursor: pointer;
     " title="Click to copy version info">
-      v1.1.0
+      v1.12.0
     </div>
-    
+
     <script>
       // Update version with build timestamp
       // NOTE: Remember to update the version number above when deploying!
@@ -159,11 +159,11 @@
         const versionEl = document.getElementById('version-indicator');
         if (versionEl) {
           const buildTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-          versionEl.textContent = `v1.1.0 (${buildTime})`;
-          
+          versionEl.textContent = `v1.12.0 (${buildTime})`;
+
           // Add click to copy functionality
           versionEl.addEventListener('click', function() {
-            const versionInfo = `CADMonkey by ComfySpace v1.1.0\nBuild: ${buildTime}\nURL: ${window.location.href}`;
+            const versionInfo = `CADMonkey by ComfySpace v1.12.0\nBuild: ${buildTime}\nURL: ${window.location.href}`;
             navigator.clipboard.writeText(versionInfo).then(() => {
               const originalText = versionEl.textContent;
               versionEl.textContent = 'Copied!';

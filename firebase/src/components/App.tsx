@@ -12,10 +12,12 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import CustomizerPanel from './CustomizerPanel';
 import AIPromptPanel from './AIPromptPanel';
 import ExportButton from './ExportButton';
+import Gallery from './Gallery';
 
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
   const [state, setState] = useState(initialState);
+  const [currentView, setCurrentView] = useState<'workspace' | 'gallery'>('workspace');
   
   const model = new Model(fs, state, setState, statePersister);
   useEffect(() => model.init());
@@ -86,14 +88,93 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         }}>
           
-          {/* Top Section: Code Editor and 3D Preview */}
+          {/* Navigation Header */}
           <div style={{
             display: 'flex',
-            flex: '1',
-            gap: '2px',
-            padding: '16px',
-            paddingBottom: '8px'
+            alignItems: 'center',
+            padding: '12px 20px',
+            backgroundColor: 'white',
+            borderBottom: '1px solid #e1e5e9',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
           }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: '24px'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '12px',
+                fontSize: '16px'
+              }}>
+                🐒
+              </div>
+              <h1 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#495057'
+              }}>
+                CADMonkey by ComfySpace
+              </h1>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '8px'
+            }}>
+              <button
+                onClick={() => setCurrentView('workspace')}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid #e1e5e9',
+                  background: currentView === 'workspace' ? '#667eea' : 'white',
+                  color: currentView === 'workspace' ? 'white' : '#495057',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Workspace
+              </button>
+              <button
+                onClick={() => setCurrentView('gallery')}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid #e1e5e9',
+                  background: currentView === 'gallery' ? '#667eea' : 'white',
+                  color: currentView === 'gallery' ? 'white' : '#495057',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Gallery
+              </button>
+            </div>
+          </div>
+          
+          {/* Main Content */}
+          {currentView === 'workspace' ? (
+            <>
+              {/* Top Section: Code Editor and 3D Preview */}
+              <div style={{
+                display: 'flex',
+                flex: '1',
+                gap: '2px',
+                padding: '16px',
+                paddingBottom: '8px'
+              }}>
             
             {/* Left Side - Code Editor */}
             <div style={{
@@ -184,10 +265,24 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                 borderRadius: '0'
               }}
             />
-          </div>
+              </div>
 
-                  {/* <Footer /> */} {/* Commented out - export functionality moved to 3D Preview header */}
-                  <ConfirmDialog />
+              {/* <Footer /> */} {/* Commented out - export functionality moved to 3D Preview header */}
+            </>
+          ) : (
+            /* Gallery View */
+            <div style={{ flex: '1', overflow: 'hidden' }}>
+              <Gallery 
+                model={model}
+                onModelSelect={(scadCode) => {
+                  model.source = scadCode;
+                  setCurrentView('workspace');
+                }}
+              />
+            </div>
+          )}
+          
+          <ConfirmDialog />
         </div>
       </FSContext.Provider>
     </ModelContext.Provider>
