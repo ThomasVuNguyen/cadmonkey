@@ -7,7 +7,7 @@ import modal
 
 app = modal.App("k-1b-chat")
 
-# Build image with llama.cpp
+# Build image with llama.cpp - keep CPU version for now, GPU will be handled by Modal
 image = (
     modal.Image.debian_slim()
     .apt_install("git", "build-essential", "cmake", "wget", "libcurl4-openssl-dev")
@@ -61,8 +61,8 @@ def upload_model():
 # Chat completion endpoint
 @app.function(
     image=image,
-    cpu=4.0,  # 4 vCPUs - increased for better performance
-    memory=2048,  # 2GB RAM
+    cpu=8.0,  # 8 vCPUs - back to CPU since GPU setup is complex
+    memory=4096,  # 4GB RAM - increased for better performance
     volumes={"/models": volume},
     timeout=300,  # 5 minutes timeout
     min_containers=0,  # Scale to zero when idle (saves money)

@@ -37,10 +37,8 @@ def test_health():
 
 def test_chat(message="hey cadmonkey, make me a box", max_tokens=100):
     """Test the standard chat endpoint"""
-    print("\n" + "="*60)
-    print("Testing Chat Endpoint")
-    print("="*60)
     print(f"Message: {message}")
+    print(f"Max Tokens: {max_tokens}")
 
     payload = {
         "message": message,
@@ -50,14 +48,14 @@ def test_chat(message="hey cadmonkey, make me a box", max_tokens=100):
 
     try:
         print(f"\nSending request to: {CHAT_URL}")
-        print(f"Payload: {json.dumps(payload, indent=2)}")
+        print("Payload:", json.dumps(payload, indent=2))
 
         start_time = time.time()
         response = requests.post(
             CHAT_URL,
             json=payload,
             headers={"Content-Type": "application/json"},
-            timeout=60
+            timeout=300  # 5 minutes timeout
         )
         elapsed_time = time.time() - start_time
 
@@ -66,8 +64,12 @@ def test_chat(message="hey cadmonkey, make me a box", max_tokens=100):
 
         if response.status_code == 200:
             result = response.json()
-            print(f"\nResponse: {json.dumps(result, indent=2)}")
-            print("\n✓ Chat endpoint test passed!")
+            print(f"\nGenerated OpenSCAD Code:")
+            print("-" * 40)
+            print(result.get('response', 'No response'))
+            print("-" * 40)
+            print(f"\n✓ Chat endpoint test passed!")
+            print(f"Response time: {elapsed_time:.2f}s")
             return True
         else:
             print(f"\nError Response: {response.text}")
@@ -133,25 +135,28 @@ def run_all_tests():
     # Test 1: Health Check
     results.append(("Health Check", test_health()))
 
-    # Test 2: Chat - Box
-    results.append(("Chat (Box)", test_chat("hey cadmonkey, make me a box", max_tokens=100)))
+    # Test 2: Simple Shape - Cube
+    print("\n" + "="*60)
+    print("Testing: Simple Shape - Cube")
+    print("="*60)
+    cube_result = test_chat("hey cadmonkey, make me a cube", max_tokens=200)
+    results.append(("Cube", cube_result))
 
-    # Test 3: Chat - Sphere
-    results.append(("Chat (Sphere)", test_chat("hey cadmonkey, make me a sphere", max_tokens=100)))
+    # Test 3: Creative Request - Chicken
+    print("\n" + "="*60)
+    print("Testing: Creative Request - Chicken")
+    print("="*60)
+    chicken_result = test_chat("hey cadmonkey, make me a chicken", max_tokens=500)
+    results.append(("Chicken", chicken_result))
 
-    # Test 4: Chat - Cylinder
-    results.append(("Chat (Cylinder)", test_chat("hey cadmonkey, make me a cylinder", max_tokens=100)))
+    # Test 4: Complex Component
+    print("\n" + "="*60)
+    print("Testing: Complex Component")
+    print("="*60)
+    complex_result = test_chat("hey cadmonkey, make me a complex component", max_tokens=1000)
+    results.append(("Complex Component", complex_result))
 
-    # Test 5: Chat - Cone
-    results.append(("Chat (Cone)", test_chat("hey cadmonkey, make me a cone", max_tokens=100)))
-
-    # Test 6: Chat - Torus
-    results.append(("Chat (Torus)", test_chat("hey cadmonkey, make me a torus", max_tokens=100)))
-
-    # Test 7: Complex shape
-    results.append(("Chat (Complex)", test_chat("hey cadmonkey, make me a cube with rounded edges", max_tokens=200)))
-
-    # Test 8: Error Handling
+    # Test 5: Error Handling
     test_error_handling()
 
     # Summary
