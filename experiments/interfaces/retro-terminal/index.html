@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Retro Synthesis Console</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="crt">
+    <header>
+      <h1>RETRO SYNTHESIS CONSOLE</h1>
+      <p>TYPE OBJECT; WATCH PROCEDURAL CODE STREAM; GLYPH ENGINE RUNNING...</p>
+    </header>
+    <section class="console">
+      <div class="input-area">
+        <label for="objectPrompt">&gt; object.describe()</label>
+        <input id="objectPrompt" type="text" autocomplete="off" autofocus placeholder="duck, cube, race car...">
+      </div>
+      <div class="storm">
+        <canvas id="waveCanvas"></canvas>
+      </div>
+      <div class="log-view">
+        <pre id="logOutput"></pre>
+      </div>
+    </section>
+    <footer>
+      <span class="status" id="statusLamp"></span>
+      <p>HOLD ALT FOR SECRET MODES · SHIFT+ENTER TO RANDOMIZE OPERATORS</p>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

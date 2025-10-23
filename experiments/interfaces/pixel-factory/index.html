@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pixel Factory</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="factory">
+    <section class="board">
+      <header>
+        <h1>Pixel Factory</h1>
+        <p>Drop sprites, brew code, print a low-poly legend.</p>
+      </header>
+      <div class="grid">
+        <div class="prompt-panel">
+          <label for="pixelPrompt">Pixel blueprint</label>
+          <input id="pixelPrompt" type="text" placeholder="galactic rubber duck">
+          <div class="palette">
+            <span>Palette</span>
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <button id="pixelBake">Bake sprite code</button>
+        </div>
+        <div class="sprite-panel">
+          <canvas id="pixelCanvas" width="240" height="240"></canvas>
+          <div class="sprite-info">
+            <span id="spriteName">Duck-00</span>
+            <span id="spriteMood">mood: heroic</span>
+          </div>
+        </div>
+        <div class="code-panel">
+          <h2>Voxel Recipe</h2>
+          <pre id="pixelCode"></pre>
+        </div>
+      </div>
+      <footer>
+        <span>Press SPACE to shuffle palette</span>
+      </footer>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

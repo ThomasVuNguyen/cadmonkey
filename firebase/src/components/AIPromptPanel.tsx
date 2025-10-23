@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -18,6 +18,7 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Backend URLs
   const BACKEND_URL = 'https://thomas-15--k-1b-chat-chat.modal.run';
@@ -27,6 +28,7 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
     if (!prompt.trim()) return;
 
     setIsLoading(true);
+    setIsGenerating(true);
     setError(null);
 
     try {
@@ -117,6 +119,7 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -127,59 +130,162 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
   };
 
   return (
-    <Card 
-      className={`ai-prompt-panel ${className ?? ''}`} 
-      style={{
-        margin: '10px',
-        ...style
-      }}
-      title="AI CAD Assistant"
-    >
-      <div className="flex flex-column gap-3">
-        <div className="flex flex-row gap-2">
-          <InputText
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Describe what you want to create (e.g., 'a cube', 'a sphere', 'a cylinder with rounded edges')"
-            style={{ flex: 1 }}
-            disabled={isLoading}
-          />
-          <Button
-            label="Generate"
-            icon="pi pi-magic-wand"
-            onClick={handleGenerate}
-            loading={isLoading}
-            disabled={!prompt.trim() || isLoading}
-          />
-        </div>
-        
-        {error && (
-          <Message 
-            severity="error" 
-            text={error}
-            onClose={() => setError(null)}
-          />
-        )}
-        
-        {isLoading && (
-          <div className="flex justify-content-center">
-            <ProgressSpinner size="30px" />
-            <span style={{ marginLeft: '10px' }}>Generating OpenSCAD code...</span>
+    <div className={`ai-prompt-panel ${className ?? ''}`} style={style}>
+      <Card className="ai-prompt-card" style={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        border: 'none',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        margin: '0',
+        overflow: 'hidden'
+      }}>
+        <div style={{ padding: '24px' }}>
+          {/* Header */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '20px',
+            color: 'white'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px',
+              fontSize: '18px'
+            }}>
+              🤖
+            </div>
+            <div>
+              <h3 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>
+                AI OpenSCAD Generator
+              </h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: '0.8' }}>
+                Describe your 3D object and watch it come to life
+              </p>
+            </div>
           </div>
-        )}
-        
-        <div className="text-sm text-600">
-          <p><strong>Examples:</strong></p>
-          <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-            <li>"a cube"</li>
-            <li>"a sphere with radius 5"</li>
-            <li>"a cylinder with rounded edges"</li>
-            <li>"a torus"</li>
-            <li>"a cone"</li>
-          </ul>
+
+          {/* Input Section */}
+          <div style={{ marginBottom: '16px' }}>
+            <InputTextarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your 3D object... (e.g., 'a cube', 'a sphere with radius 5', 'a complex geometric shape')"
+              disabled={isLoading}
+              onKeyPress={handleKeyPress}
+              rows={3}
+              style={{
+                width: '100%',
+                borderRadius: '12px',
+                border: '2px solid rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                fontSize: '16px',
+                padding: '16px',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease'
+              }}
+              className="ai-prompt-input"
+            />
+          </div>
+
+          {/* Generate Button */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Button
+              label={isLoading ? "Generating..." : "Generate OpenSCAD"}
+              icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-magic-wand"}
+              onClick={handleGenerate}
+              disabled={!prompt.trim() || isLoading}
+              className="p-button-primary"
+              style={{
+                flex: 1,
+                height: '48px',
+                borderRadius: '12px',
+                background: isLoading ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.9)',
+                color: isLoading ? 'white' : '#667eea',
+                border: 'none',
+                fontSize: '16px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+              }}
+            />
+            
+            {/* Generation Status */}
+            {isGenerating && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: 'white',
+                fontSize: '14px',
+                opacity: '0.8'
+              }}>
+                <ProgressSpinner 
+                  style={{ width: '20px', height: '20px', marginRight: '8px' }}
+                  strokeWidth="3"
+                />
+                <span>Streaming...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div style={{ marginTop: '16px' }}>
+              <Message 
+                severity="error" 
+                text={error}
+                style={{
+                  borderRadius: '12px',
+                  background: 'rgba(255,87,87,0.1)',
+                  border: '1px solid rgba(255,87,87,0.3)',
+                  color: '#ff5757'
+                }}
+              />
+            </div>
+          )}
+
+          {/* Tips */}
+          {!isLoading && !prompt && (
+            <div style={{ 
+              marginTop: '16px', 
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '14px',
+              lineHeight: '1.5'
+            }}>
+              <strong>💡 Tips:</strong> Be specific about dimensions, shapes, and features. 
+              Try prompts like "a cube with rounded corners" or "a complex gear mechanism".
+            </div>
+          )}
         </div>
-      </div>
-    </Card>
+      </Card>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        .ai-prompt-input::placeholder {
+          color: rgba(255,255,255,0.6);
+        }
+        
+        .ai-prompt-input:focus {
+          border-color: rgba(255,255,255,0.5) !important;
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.1) !important;
+          background: rgba(255,255,255,0.15) !important;
+        }
+        
+        .ai-prompt-card {
+          transition: all 0.3s ease;
+        }
+        
+        .ai-prompt-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+      `}</style>
+    </div>
   );
 }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zen Garden Modeler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="garden">
+    <section class="left">
+      <h1>Zen Garden Modeler</h1>
+      <p>Write a haiku-like description. Watch sand patterns and code unfold.</p>
+      <label for="zenPrompt">Describe the form</label>
+      <textarea id="zenPrompt" rows="4" placeholder="stone turtle floating above ripples"></textarea>
+      <div class="controls">
+        <label>Rake intensity</label>
+        <input id="rakeRange" type="range" min="0" max="100" value="42">
+        <label>Wind direction</label>
+        <div class="wind-select">
+          <button data-wind="north" class="active">北</button>
+          <button data-wind="east">東</button>
+          <button data-wind="south">南</button>
+          <button data-wind="west">西</button>
+        </div>
+      </div>
+      <button id="meditateBtn">Meditate</button>
+    </section>
+    <section class="right">
+      <div class="sand-box">
+        <canvas id="zenCanvas"></canvas>
+        <div class="poem" id="zenPoem"></div>
+      </div>
+      <div class="code-box">
+        <h2>Garden Script</h2>
+        <pre id="zenCode"></pre>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

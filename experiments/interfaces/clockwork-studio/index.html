@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clockwork Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="studio">
+    <header>
+      <h1>Clockwork Studio</h1>
+      <p>Wind the gears, describe the invention, watch brass code emerge.</p>
+    </header>
+    <section class="layout">
+      <aside class="controls">
+        <label for="clockworkPrompt">Mechanism concept</label>
+        <textarea id="clockworkPrompt" rows="3" placeholder="steam-powered duck automaton"></textarea>
+        <div class="gauges">
+          <div class="gauge">
+            <span>Torque</span>
+            <input id="torqueRange" type="range" min="0" max="100" value="58">
+          </div>
+          <div class="gauge">
+            <span>Polish</span>
+            <input id="polishRange" type="range" min="0" max="100" value="72">
+          </div>
+        </div>
+        <div class="cogs">
+          <button data-mode="precision" class="active">Precision</button>
+          <button data-mode="spectacle">Spectacle</button>
+          <button data-mode="utility">Utility</button>
+        </div>
+        <button id="windBtn">Wind the mainspring</button>
+      </aside>
+      <section class="preview">
+        <canvas id="clockworkCanvas"></canvas>
+        <div class="plates">
+          <span id="clockworkName">Aurelian Duck</span>
+          <span id="clockworkSpecs">rpm 320 / balance 0.84</span>
+        </div>
+      </section>
+      <section class="code">
+        <h2>Assembly Script</h2>
+        <pre id="clockworkCode"></pre>
+      </section>
+    </section>
+    <footer>
+      <span>Tip: drag to spin gears · Shift+W rewinds everything</span>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

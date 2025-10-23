@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flux Lab - Generative 3D Workshop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="orbital-bg">
+    <div class="nebula"></div>
+    <div class="nebula second"></div>
+  </div>
+  <main class="lab-shell">
+    <header class="lab-header">
+      <h1>Flux Lab</h1>
+      <p>Describe matter. Watch code crystallize into geometry in real-time.</p>
+    </header>
+    <section class="lab-grid">
+      <article class="lab-panel control">
+        <h2>Material Prompt</h2>
+        <label for="objectInput">What are we forging today?</label>
+        <input id="objectInput" type="text" placeholder="e.g. luminescent lotus drone">
+        <div class="presets">
+          <button data-prompt="a crystalline jellyfish lamp">Crystalline Lamp</button>
+          <button data-prompt="an aerodynamic race glider">Race Glider</button>
+          <button data-prompt="a modular floating habitat">Floating Habitat</button>
+        </div>
+        <h3>Fabrication Style</h3>
+        <div class="chips">
+          <label><input type="radio" name="style" value="parametric" checked> Parametric</label>
+          <label><input type="radio" name="style" value="voxel"> Voxel Flux</label>
+          <label><input type="radio" name="style" value="organic"> Organic Mesh</label>
+        </div>
+      </article>
+      <article class="lab-panel code">
+        <h2>Procedural Script</h2>
+        <pre id="codeOutput"></pre>
+      </article>
+      <article class="lab-panel render">
+        <h2>Quantum Preview</h2>
+        <canvas id="previewCanvas"></canvas>
+        <div class="render-hints">
+          <span id="energyPulse"></span>
+          <p>Quantum flux metrics recalibrate with every keystroke.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

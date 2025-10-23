@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hyper Scribble Synth</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="scribble">
+    <header>
+      <h1>Hyper Scribble Synth</h1>
+      <p>Spray your idea, slam a beat, code riff appears.</p>
+    </header>
+    <section class="layout">
+      <div class="spray-wall">
+        <canvas id="scribbleCanvas"></canvas>
+        <textarea id="scribblePrompt" placeholder="neon koi hoverboard" spellcheck="false"></textarea>
+        <div class="spray-controls">
+          <button data-color="#ff4f70" class="active">Flare</button>
+          <button data-color="#5dff8f">Mint</button>
+          <button data-color="#57a4ff">Sky</button>
+          <button data-color="#ffe54f">Lumen</button>
+        </div>
+      </div>
+      <aside class="mix-panel">
+        <h2>Beat Mixer</h2>
+        <div class="knobs">
+          <label>Tempo<input id="tempoKnob" type="range" min="60" max="180" value="110"></label>
+          <label>Noise<input id="noiseKnob" type="range" min="0" max="100" value="35"></label>
+          <label>Glitch<input id="glitchKnob" type="range" min="0" max="100" value="50"></label>
+        </div>
+        <button id="riffBtn">Drop the riff</button>
+        <pre id="scribbleCode"></pre>
+      </aside>
+    </section>
+    <footer>
+      <span>Hold mouse to spray, double tap canvas to clear.</span>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

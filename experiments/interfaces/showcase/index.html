@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generative UI Showcase</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="showcase">
+    <aside class="sidebar">
+      <h1>Generative 3D UI Showcase</h1>
+      <p>Select a panel or use ← → to cycle through ten experimental interfaces.</p>
+      <nav id="panelList"></nav>
+      <div class="controls">
+        <button id="prevBtn">Previous</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </aside>
+    <section class="viewport">
+      <iframe id="previewFrame" title="Interface preview" sandbox="allow-scripts allow-same-origin"></iframe>
+      <div class="meta">
+        <h2 id="panelTitle"></h2>
+        <p id="panelBlurb"></p>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber Notebook Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="notebook">
+    <header>
+      <h1>Cyber Notebook Lab</h1>
+      <p>Sketch the idea. Watch the margin codex scramble a 3D build spell.</p>
+    </header>
+    <section class="sheet">
+      <div class="margin">
+        <button data-template="skateboard drone buddy">Skate Drone</button>
+        <button data-template="pocket dragon assistant">Pocket Dragon</button>
+        <button data-template="modular city cube">City Cube</button>
+        <div class="sticky">
+          <span>CTRL + ENTER</span>
+          <span>to scribble</span>
+        </div>
+      </div>
+      <div class="page">
+        <textarea id="scribbleArea" placeholder="doodle your 3d idea here"></textarea>
+        <div class="overlay" id="doodleOverlay"></div>
+      </div>
+      <aside class="sidebar">
+        <h2>Margin Codex</h2>
+        <pre id="codeMargin"></pre>
+      </aside>
+    </section>
+    <footer>
+      <label class="checkbox">
+        <input id="glitchToggle" type="checkbox">
+        <span>Enable glitch ink</span>
+      </label>
+      <div class="paper-curl"></div>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
