@@ -19,8 +19,9 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Backend URL from the test file - you should update this with your actual deployed URL
+  // Backend URLs
   const BACKEND_URL = 'https://thomas-15--k-1b-chat-chat.modal.run';
+  const STREAM_URL = 'https://thomas-15--k-1b-chat-chat-stream.modal.run';
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -29,7 +30,8 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
     setError(null);
 
     try {
-      const response = await fetch(BACKEND_URL, {
+      // Use streaming endpoint for real-time generation (CPU-only)
+      const response = await fetch(STREAM_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,24 +47,67 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
       }
 
-      // Extract OpenSCAD code from the response and clean it up
-      let openSCADCode = data.response;
-      
-      // Remove common artifacts from the AI response
-      openSCADCode = openSCADCode
+      const decoder = new TextDecoder();
+      let generatedCode = '';
+
+      // Clear the editor first
+      model.source = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.token) {
+                // Clean up the token
+                let cleanToken = data.token;
+                if (cleanToken.startsWith('Assistant:')) {
+                  cleanToken = cleanToken.replace('Assistant:', '').trim();
+                }
+                if (cleanToken && !cleanToken.startsWith('User:')) {
+                  generatedCode += cleanToken + '\n';
+                  // Update the editor in real-time
+                  model.source = generatedCode;
+                }
+              }
+              
+              if (data.done) {
+                break;
+              }
+              
+              if (data.error) {
+                throw new Error(data.error);
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse SSE data:', parseError);
+            }
+          }
+        }
+      }
+
+      // Final cleanup of the generated code
+      let finalCode = generatedCode
         .replace(/> EOF by user.*$/gm, '') // Remove "> EOF by user" lines
         .replace(/^>.*$/gm, '') // Remove any lines starting with ">"
         .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up multiple newlines
         .trim(); // Remove leading/trailing whitespace
       
-      // Update the editor with the generated code
-      model.source = openSCADCode;
+      // Update with final cleaned code
+      model.source = finalCode;
       
       // Clear the prompt
       setPrompt('');

@@ -128,6 +128,90 @@ def chat(item: dict):
     except Exception as e:
         return {"error": str(e)}
 
+# Streaming chat endpoint (CPU-only)
+@app.function(
+    image=image,
+    cpu=8.0,  # 8 vCPUs - CPU-only configuration
+    memory=4096,  # 4GB RAM
+    volumes={"/models": volume},
+    timeout=300,  # 5 minutes timeout
+    min_containers=0,  # Scale to zero when idle (saves money)
+)
+@modal.fastapi_endpoint(method="POST")
+def chat_stream(item: dict):
+    """
+    Streaming chat endpoint - returns Server-Sent Events (CPU-only)
+    
+    POST with JSON:
+    {
+        "message": "Hello!",
+        "max_tokens": 256,
+        "temperature": 0.7
+    }
+    """
+    import subprocess
+    import json
+    from fastapi.responses import StreamingResponse
+
+    message = item.get("message", "")
+    max_tokens = item.get("max_tokens", 256)
+    temperature = item.get("temperature", 0.7)
+
+    if not message:
+        return {"error": "No message provided"}
+
+    # Build prompt
+    prompt = f"User: {message}\nAssistant:"
+
+    def generate_stream():
+        try:
+            # Run llama.cpp with streaming output (CPU-only)
+            process = subprocess.Popen(
+                [
+                    "/llama-cpp/build/bin/llama-cli",
+                    "-m", "/models/k-1b.gguf",
+                    "-p", prompt,
+                    "-n", str(max_tokens),
+                    "--temp", str(temperature),
+                    "-t", "2",  # Use 2 threads for CPU
+                    "--no-display-prompt",
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
+
+            # Stream output line by line
+            for line in process.stdout:
+                if line.strip():
+                    # Clean up the line
+                    cleaned_line = line.strip()
+                    if cleaned_line.startswith("Assistant:"):
+                        cleaned_line = cleaned_line.replace("Assistant:", "").strip()
+                    if cleaned_line and not cleaned_line.startswith("User:"):
+                        # Send as Server-Sent Event
+                        yield f"data: {json.dumps({'token': cleaned_line})}\n\n"
+            
+            process.wait()
+            
+            # Send completion signal
+            yield f"data: {json.dumps({'done': True})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+        }
+    )
+
 # Health check
 @app.function(
     image=image,
