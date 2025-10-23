@@ -61,10 +61,10 @@ def upload_model():
 # Chat completion endpoint
 @app.function(
     image=image,
-    cpu=2.0,  # 2 vCPUs - adjust as needed
+    cpu=4.0,  # 4 vCPUs - increased for better performance
     memory=2048,  # 2GB RAM
     volumes={"/models": volume},
-    timeout=60,
+    timeout=300,  # 5 minutes timeout
     min_containers=0,  # Scale to zero when idle (saves money)
 )
 @modal.fastapi_endpoint(method="POST")
@@ -106,7 +106,7 @@ def chat(item: dict):
             ],
             capture_output=True,
             text=True,
-            timeout=50,
+            timeout=280,  # 4 minutes 40 seconds (leaving buffer for processing)
         )
 
         # Parse output
