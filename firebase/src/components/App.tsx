@@ -79,22 +79,22 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
       <FSContext.Provider value={fs}>
         <div style={{
           display: 'flex',
+          flexDirection: 'column',
           height: '100vh',
           backgroundColor: '#f8f9fa',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         }}>
           
-          {/* Left Side - Two Panels */}
+          {/* Top Section: Code Editor and 3D Preview */}
           <div style={{
             display: 'flex',
-            flexDirection: 'column',
             flex: '1',
             gap: '2px',
             padding: '16px',
-            paddingRight: '8px'
+            paddingBottom: '8px'
           }}>
             
-            {/* Top Left - Code Editor */}
+            {/* Left Side - Code Editor */}
             <div style={{
               flex: '1',
               backgroundColor: 'white',
@@ -102,7 +102,9 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               border: '1px solid #e1e5e9',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
               overflow: 'hidden',
-              position: 'relative'
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column'
             }}>
               <div style={{
                 padding: '16px',
@@ -114,7 +116,7 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               }}>
                 OpenSCAD Code
               </div>
-              <div style={{ height: 'calc(100% - 49px)' }}>
+              <div style={{ flex: '1' }}>
                 <EditorPanel 
                   className="minimal-editor"
                   style={{ 
@@ -126,39 +128,17 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               </div>
             </div>
 
-            {/* Bottom Left - AI Prompt */}
+            {/* Right Side - 3D Preview */}
             <div style={{
-              height: '200px',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e1e5e9',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              overflow: 'hidden'
-            }}>
-              <AIPromptPanel 
-                style={{
-                  height: '100%',
-                  margin: '0',
-                  borderRadius: '0'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Right Side - 3D Viewer */}
-          <div style={{
-            flex: '1',
-            padding: '16px',
-            paddingLeft: '8px'
-          }}>
-            <div style={{
-              height: '100%',
+              flex: '1',
               backgroundColor: 'white',
               borderRadius: '12px',
               border: '1px solid #e1e5e9',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
               overflow: 'hidden',
-              position: 'relative'
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column'
             }}>
               <div style={{
                 padding: '16px',
@@ -170,7 +150,7 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               }}>
                 3D Preview
               </div>
-              <div style={{ height: 'calc(100% - 49px)' }}>
+              <div style={{ flex: '1' }}>
                 <ViewerPanel 
                   style={{ 
                     height: '100%',
@@ -182,6 +162,26 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
             </div>
           </div>
 
+          {/* Bottom Section - AI Generator (Full Width) */}
+          <div style={{
+            height: '200px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            border: '1px solid #e1e5e9',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            overflow: 'hidden',
+            margin: '0 16px 16px 16px'
+          }}>
+            <AIPromptPanel 
+              style={{
+                height: '100%',
+                margin: '0',
+                borderRadius: '0'
+              }}
+            />
+          </div>
+
+          <Footer />
           <ConfirmDialog />
         </div>
       </FSContext.Provider>
