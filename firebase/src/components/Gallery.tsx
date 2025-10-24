@@ -29,8 +29,25 @@ export default function Gallery({ model, onModelSelect }: GalleryProps) {
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await ModelService.getModelsPaginated(lastDoc, 12);
+
+      // Log detailed info about loaded models
+      console.log('📊 [GALLERY] Loaded', result.models.length, 'models');
+      result.models.forEach((model, idx) => {
+        console.log(`🎨 [GALLERY] Model ${idx + 1}:`, {
+          id: model.id,
+          prompt: model.prompt.substring(0, 50) + '...',
+          hasThumbnail: !!model.thumbnailUrl,
+          thumbnailUrl: model.thumbnailUrl || 'MISSING',
+          thumbnailType: model.thumbnailUrl ? (
+            model.thumbnailUrl.startsWith('data:') ? 'Data URL' :
+            model.thumbnailUrl.startsWith('http') ? 'HTTP URL' :
+            'Unknown'
+          ) : 'N/A'
+        });
+      });
+
       setModels(prev => lastDoc ? [...prev, ...result.models] : result.models);
       setLastDoc(result.lastDoc);
       setHasMore(result.models.length === 12);

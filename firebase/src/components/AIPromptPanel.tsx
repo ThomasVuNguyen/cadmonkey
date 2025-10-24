@@ -159,11 +159,12 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
         }],
         args: [
           '/thumbnail.scad',
-          '-o', 'thumbnail.stl',
+          '-o', 'thumbnail.off',
           '--backend=manifold',
-          '--export-format=binstl'
+          '--export-format=off',
+          '--enable=lazy-union'
         ],
-        outputPaths: ['thumbnail.stl']
+        outputPaths: ['thumbnail.off']
       }, (streams) => {
         console.log('Thumbnail OpenSCAD output:', streams);
       });
@@ -180,34 +181,62 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
       if (result.outputs && result.outputs.length > 0) {
         const [, content] = result.outputs[0];
         console.log('✅ [RENDER] Thumbnail OpenSCAD rendering successful!');
+        console.log('🔄 [CONVERT] Converting OFF to GLB format...');
+
+        // Convert OFF to GLB (same as main viewer does)
+        const { parseOff } = await import('../io/import_off');
+        const { exportGlb } = await import('../io/export_glb');
+
+        const offText = new TextDecoder().decode(content);
+        const offData = parseOff(offText);
+        const glbBlob = await exportGlb(offData);
+
+        console.log('✅ [CONVERT] Conversion to GLB successful!');
         console.log('📸 [CAPTURE] Capturing 3D model screenshot...');
 
         // Create a temporary model-viewer element to display the 3D model
         // IMPORTANT: Must be visible and in viewport for rendering to work
         const modelViewer = document.createElement('model-viewer') as any;
-        const blob = new Blob([content], { type: 'application/octet-stream' });
-        modelViewer.src = URL.createObjectURL(blob);
-        modelViewer.style.width = '400px';
-        modelViewer.style.height = '400px';
+        modelViewer.src = URL.createObjectURL(glbBlob);
+
+        // Style - must be VISIBLE for WebGL to render!
+        modelViewer.style.width = '600px';
+        modelViewer.style.height = '600px';
         modelViewer.style.position = 'fixed';
         modelViewer.style.top = '50%';
         modelViewer.style.left = '50%';
         modelViewer.style.transform = 'translate(-50%, -50%)';
         modelViewer.style.zIndex = '9999';
-        modelViewer.style.pointerEvents = 'none';
+        modelViewer.style.backgroundColor = '#f0f0f0';
+        modelViewer.style.border = '2px solid #667eea';
+
+        // Model viewer attributes (same as main viewer for consistency)
         modelViewer.setAttribute('camera-controls', '');
-        modelViewer.setAttribute('auto-rotate', '');
+        modelViewer.setAttribute('orientation', '0deg -90deg 0deg');
+        modelViewer.setAttribute('camera-orbit', '0.7854rad 0.7854rad auto');
+        modelViewer.setAttribute('environment-image', './skybox-lights.jpg');
+
+        console.log('📺 [CAPTURE] Adding model-viewer to DOM (visible for WebGL rendering)');
 
         // Add to DOM temporarily
         document.body.appendChild(modelViewer);
 
-        // Wait for model to load and render
+        // Wait for model to load and render properly
         await new Promise((resolve) => {
+          let loadFired = false;
           modelViewer.addEventListener('load', () => {
-            // Give it extra time to render nicely
-            setTimeout(resolve, 1000);
+            console.log('✅ [CAPTURE] Model loaded event fired');
+            loadFired = true;
+            // Give WebGL extra time to render frames
+            setTimeout(resolve, 2000);
           });
-          setTimeout(resolve, 5000); // 5 second max timeout
+          // Fallback timeout in case load never fires
+          setTimeout(() => {
+            if (!loadFired) {
+              console.warn('⚠️ [CAPTURE] Load event never fired, using fallback timeout');
+            }
+            resolve(null);
+          }, 8000);
         });
 
         // Capture screenshot using toDataURL

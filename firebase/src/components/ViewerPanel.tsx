@@ -92,7 +92,7 @@ export default function ViewerPanel({className, style}: {className?: string, sty
     const preview = {blurhash: await imageToBlurhash(uri)};
     // const preview = {thumbhash: await imageToThumbhash(uri)};
     console.log(preview);
-    
+
     model?.mutate(s => s.preview = preview);
   }, [model, modelUri, setLoadedUri, modelViewerRef.current]);
 

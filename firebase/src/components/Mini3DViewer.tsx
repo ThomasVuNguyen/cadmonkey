@@ -22,12 +22,17 @@ export default function Mini3DViewer({ scadCode, prompt, thumbnail, style }: Min
     const generatePreview = async () => {
       // If we already have a thumbnail, use it!
       if (thumbnail) {
-        console.log('Using pre-rendered thumbnail instead of live rendering');
+        console.log('🖼️ [MINI3DVIEWER] Using pre-rendered thumbnail');
+        console.log('🔗 [MINI3DVIEWER] Thumbnail URL:', thumbnail);
+        console.log('📏 [MINI3DVIEWER] URL length:', thumbnail.length);
+        console.log('🎯 [MINI3DVIEWER] URL type:', thumbnail.startsWith('data:') ? 'Data URL' : thumbnail.startsWith('http') ? 'HTTP URL' : 'Unknown');
         setPreviewImage(thumbnail);
         setIsRendering(false);
         setHasError(false);
         return;
       }
+
+      console.log('⚠️ [MINI3DVIEWER] No thumbnail URL available, will attempt live rendering');
 
       // Otherwise, render it live (only for models without thumbnails)
       setIsRendering(true);
@@ -277,9 +282,14 @@ export default function Mini3DViewer({ scadCode, prompt, thumbnail, style }: Min
           </div>
         </div>
       ) : previewImage ? (
-        <img 
+        <img
           src={previewImage}
           alt="3D Preview"
+          onError={(e) => {
+            console.error('Failed to load thumbnail image:', previewImage);
+            setHasError(true);
+            setPreviewImage(null);
+          }}
           style={{
             maxWidth: '100%',
             maxHeight: '100%',
