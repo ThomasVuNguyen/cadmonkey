@@ -6,8 +6,8 @@
     <title>CADMonkey by ComfySpace</title>
     <meta name="description" content="CADMonkey by ComfySpace: AI-powered OpenSCAD code generation and 3D modeling in the browser">
 
-    <link rel="icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="logo192.png">
+    <link rel="icon" href="icon.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="icon.webp">
     <!-- https://developers.google.com/web/fundamentals/web-app-manifest/ -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
@@ -128,7 +128,19 @@
 
     <noscript>You need to enable JavaScript to run the OpenSCAD Playground.</noscript>
 
-
+    <!-- 100% privacy-first analytics -->
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    
+    <!-- Force service worker update -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    </script>
     
     <div id="root"></div>
   </body>

@@ -91,6 +91,7 @@ const config = [
           maximumFileSizeToCacheInBytes: 200 * 1024 * 1024,
           clientsClaim: true,
           skipWaiting: true,
+          cacheId: 'cadmonkey-v1.20',
           runtimeCaching: [{
             urlPattern: ({ request, url }) => true,
             handler: 'StaleWhileRevalidate',
