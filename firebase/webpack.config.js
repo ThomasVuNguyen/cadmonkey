@@ -63,7 +63,14 @@ const config = [
       path: path.resolve(__dirname, 'dist'),
     },
     devServer: {
-      static: path.join(__dirname, 'dist'),
+      static: [
+        {
+          directory: path.join(__dirname, 'dist'),
+        },
+        {
+          directory: path.join(__dirname, 'public'),
+        },
+      ],
       compress: true,
       port: 4000,
     },

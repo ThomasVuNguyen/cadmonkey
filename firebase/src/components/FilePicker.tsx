@@ -122,7 +122,11 @@ export default function FilePicker({className, style}: {className?: string, styl
             }
           }}
           filter
+          placeholder="playground.scad"
+          dropdownIcon="pi pi-chevron-down"
           style={style}
+          panelClassName="file-picker-panel"
+          filterPlaceholder="Search files"
           options={fsItems} />
   )
 }

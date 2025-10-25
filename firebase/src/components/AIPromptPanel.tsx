@@ -10,9 +10,10 @@ import { ModelService } from '../services/firestore';
 interface AIPromptPanelProps {
   className?: string;
   style?: React.CSSProperties;
+  variant?: 'default' | 'compact';
 }
 
-export default function AIPromptPanel({ className, style }: AIPromptPanelProps) {
+export default function AIPromptPanel({ className, style, variant = 'default' }: AIPromptPanelProps) {
   const model = useContext(ModelContext);
   if (!model) throw new Error('No model');
 
@@ -336,6 +337,98 @@ export default function AIPromptPanel({ className, style }: AIPromptPanelProps) 
       handleGenerate();
     }
   };
+
+  if (variant === 'compact') {
+    return (
+      <div className={`ai-prompt-panel ${className ?? ''}`} style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        ...style
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: '#495057',
+          fontSize: '14px',
+          fontWeight: 600
+        }}>
+          <span>Prompt</span>
+          {isGenerating && (
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6c757d' }}>
+              <ProgressSpinner style={{ width: '14px', height: '14px', marginRight: '6px' }} strokeWidth="3" />
+              <span>Streaming…</span>
+            </div>
+          )}
+        </div>
+        <InputTextarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Describe your 3D object…"
+          disabled={isLoading}
+          onKeyPress={handleKeyPress}
+          rows={2}
+          style={{
+            width: '100%',
+            borderRadius: '10px',
+            border: '1px solid #d0d5dd',
+            background: '#f9fafc',
+            color: '#495057',
+            fontSize: '14px',
+            padding: '12px',
+            resize: 'none',
+            transition: 'all 0.2s ease'
+          }}
+          className="ai-prompt-input"
+        />
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            label={isLoading ? "Generating..." : "Generate"}
+            icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-magic-wand"}
+            onClick={handleGenerate}
+            disabled={!prompt.trim() || isLoading}
+            className="p-button-primary"
+            style={{
+              flex: 1,
+              height: '38px',
+              borderRadius: '10px',
+              background: isLoading ? '#6c757d' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+          />
+        </div>
+        {error && (
+          <Message 
+            severity="error" 
+            text={error}
+            style={{
+              borderRadius: '10px',
+              background: '#f8d7da',
+              border: '1px solid #f5c6cb',
+              color: '#721c24',
+              fontSize: '12px'
+            }}
+          />
+        )}
+        <style>{`
+          .ai-prompt-input::placeholder {
+            color: #adb5bd;
+          }
+          
+          .ai-prompt-input:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.12) !important;
+            background: white !important;
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className={`ai-prompt-panel ${className ?? ''}`} style={{

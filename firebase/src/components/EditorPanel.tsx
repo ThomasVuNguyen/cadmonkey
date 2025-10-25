@@ -10,8 +10,9 @@ import { MenuItem } from 'primereact/menuitem';
 import { Menu } from 'primereact/menu';
 import { buildUrlForStateParams } from '../state/fragment-state.ts';
 import { getBlankProjectState, defaultSourcePath } from '../state/initial-state.ts';
-import { ModelContext, FSContext } from './contexts.ts';
-import FilePicker, {  } from './FilePicker.tsx';
+import { ModelContext } from './contexts.ts';
+import FilePicker from './FilePicker.tsx';
+import './EditorPanel.css';
 
 // const isMonacoSupported = false;
 const isMonacoSupported = (() => {
@@ -72,6 +73,33 @@ export default function EditorPanel({className, style}: {className?: string, sty
     setEditor(editor)
   }
 
+  const menuItems: MenuItem[] = [
+    {
+      label: "New project",
+      icon: 'pi pi-plus-circle',
+      command: () => window.open(buildUrlForStateParams(getBlankProjectState()), '_blank'),
+      target: '_blank',
+    },
+    {
+      label: 'Save OpenSCAD project',
+      icon: 'pi pi-save',
+      command: () => model.saveProject(),
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Select All',
+      icon: 'pi pi-list',
+      command: () => editor?.trigger(state.params.activePath, 'editor.action.selectAll', null),
+    },
+    {
+      label: 'Find',
+      icon: 'pi pi-search',
+      command: () => editor?.trigger(state.params.activePath, 'actions.find', null),
+    },
+  ];
+
   return (
     <div className={`editor-panel ${className ?? ''}`} style={{
       // maxWidth: '5 0vw',
@@ -81,79 +109,32 @@ export default function EditorPanel({className, style}: {className?: string, sty
       // width: '100%', height: '100%',
       ...(style ?? {})
     }}>
-      <div className='flex flex-row gap-2' style={{
-        margin: '5px',
-      }}>
-          
-        {/* TODO: We might use this menu later
-        <Menu model={[
-          {
-            label: "New project",
-            icon: 'pi pi-plus-circle',
-            command: () => window.open(buildUrlForStateParams(getBlankProjectState()), '_blank'),
-            target: '_blank',
-          },
-          {
-            // TODO: share text, title and rendering image
-            // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share
-            label: 'Share project',
-            icon: 'pi pi-share-alt',
-            disabled: true,
-          },
-          {
-            separator: true
-          },  
-          {
-            // TODO: popup to ask for file name
-            label: "New file",
-            icon: 'pi pi-plus',
-            disabled: true,
-          },
-          {
-            label: "Copy to new file",
-            icon: 'pi pi-clone',
-            disabled: true,
-          },
-          {
-            label: "Upload file(s)",
-            icon: 'pi pi-upload',
-            disabled: true,
-          },
-          {
-            label: 'Download sources',
-            icon: 'pi pi-download',
-            disabled: true,
-          },
-          {
-            separator: true
-          },
-          {
-            separator: true
-          },
-          {
-            label: 'Select All',
-            icon: 'pi pi-info-circle',
-            command: () => editor?.trigger(state.params.activePath, 'editor.action.selectAll', null),
-          },
-          {
-            separator: true
-          },
-          {
-            label: 'Find',
-            icon: 'pi pi-search',
-            command: () => editor?.trigger(state.params.activePath, 'actions.find', null),
-          },
-        ] as MenuItem[]} popup ref={menu} />
-        <Button title="Editor menu" rounded text icon="pi pi-ellipsis-h" onClick={(e) => menu.current && menu.current.toggle(e)} />
-        */}
-        
+      <div className='editor-toolbar'>
+        <Menu model={menuItems} popup ref={menu} />
+        <Button 
+          title="Editor menu" 
+          rounded 
+          text 
+          icon="pi pi-ellipsis-h" 
+          className="toolbar-menu-button"
+          onClick={(e) => menu.current && menu.current.toggle(e)} 
+        />
 
-        {state.params.activePath !== defaultSourcePath && 
-          <Button icon="pi pi-chevron-left" 
-          text
-          onClick={() => model.openFile(defaultSourcePath)} 
-          title={`Go back to ${defaultSourcePath}`}/>}
+        <FilePicker 
+          className="editor-file-picker"
+          style={{ flex: 1 }}
+        />
 
+        {state.params.activePath !== defaultSourcePath && (
+          <Button 
+            icon="pi pi-home" 
+            text
+            className="toolbar-back-button"
+            label="Default file"
+            onClick={() => model.openFile(defaultSourcePath)} 
+            title={`Go back to ${defaultSourcePath}`}
+          />
+        )}
       </div>
 
       

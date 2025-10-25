@@ -1,23 +1,21 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 
-import React, { CSSProperties, useEffect, useState } from 'react';
-import {MultiLayoutComponentId, State, StatePersister} from '../state/app-state'
+import React, { useEffect, useState } from 'react';
+import { State, StatePersister } from '../state/app-state';
 import { Model } from '../state/model';
 import EditorPanel from './EditorPanel';
 import ViewerPanel from './ViewerPanel';
-import Footer from './Footer';
 import { ModelContext, FSContext } from './contexts';
-import PanelSwitcher from './PanelSwitcher';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import CustomizerPanel from './CustomizerPanel';
 import AIPromptPanel from './AIPromptPanel';
 import ExportButton from './ExportButton';
-import Gallery from './Gallery';
+import Museum from './Museum';
+import './AppLayout.css';
 
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
   const [state, setState] = useState(initialState);
-  const [currentView, setCurrentView] = useState<'workspace' | 'gallery'>('workspace');
+  const [currentView, setCurrentView] = useState<'workspace' | 'museum'>('workspace');
   
   const model = new Model(fs, state, setState, statePersister);
   useEffect(() => model.init());
@@ -41,247 +39,75 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
     };
   }, []);
 
-  const zIndexOfPanelsDependingOnFocus = {
-    editor: {
-      editor: 3,
-      viewer: 1,
-      customizer: 0,
-    },
-    viewer: {
-      editor: 2,
-      viewer: 3,
-      customizer: 1,
-    },
-    customizer: {
-      editor: 0,
-      viewer: 1,
-      customizer: 3,
-    }
-  }
-
-  const layout = state.view.layout
-  const mode = state.view.layout.mode;
-  function getPanelStyle(id: MultiLayoutComponentId): CSSProperties {
-    if (layout.mode === 'multi') {
-      const itemCount = (layout.editor ? 1 : 0) + (layout.viewer ? 1 : 0) + (layout.customizer ? 1 : 0)
-      return {
-        flex: 1,
-        maxWidth: Math.floor(100/itemCount) + '%',
-        display: (state.view.layout as any)[id] ? 'flex' : 'none'
-      }
-    } else {
-      return {
-        flex: 1,
-        zIndex: Number((zIndexOfPanelsDependingOnFocus as any)[id][layout.focus]),
-      }
-    }
-  }
-
   return (
     <ModelContext.Provider value={model}>
       <FSContext.Provider value={fs}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          backgroundColor: '#f8f9fa',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-        }}>
-          
-          {/* Navigation Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '12px 20px',
-            backgroundColor: 'white',
-            borderBottom: '1px solid #e1e5e9',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginRight: '24px'
-            }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: '12px',
-                fontSize: '16px'
-              }}>
-                🐒
-              </div>
-              <h1 style={{
-                margin: 0,
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#495057'
-              }}>
-                CADMonkey by ComfySpace
-              </h1>
-            </div>
-            
-            <div style={{
-              display: 'flex',
-              gap: '8px'
-            }}>
+        <div className="app-shell">
+          <header className="app-header">
+            <h1 className="app-title">CADMonkey by ComfySpace</h1>
+            <div className="app-view-toggle">
               <button
                 onClick={() => setCurrentView('workspace')}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  border: '1px solid #e1e5e9',
-                  background: currentView === 'workspace' ? '#667eea' : 'white',
-                  color: currentView === 'workspace' ? 'white' : '#495057',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
+                className={`toggle-button ${currentView === 'workspace' ? 'is-active' : ''}`}
               >
                 Workspace
               </button>
               <button
-                onClick={() => setCurrentView('gallery')}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  border: '1px solid #e1e5e9',
-                  background: currentView === 'gallery' ? '#667eea' : 'white',
-                  color: currentView === 'gallery' ? 'white' : '#495057',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
+                onClick={() => setCurrentView('museum')}
+                className={`toggle-button ${currentView === 'museum' ? 'is-active' : ''}`}
               >
-                Gallery
+                Museum
               </button>
             </div>
-          </div>
-          
-          {/* Main Content */}
-          {currentView === 'workspace' ? (
-            <>
-              {/* Top Section: Code Editor and 3D Preview */}
-              <div style={{
-                display: 'flex',
-                flex: '1',
-                gap: '2px',
-                padding: '16px',
-                paddingBottom: '8px'
-              }}>
-            
-            {/* Left Side - Code Editor */}
-            <div style={{
-              flex: '1',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e1e5e9',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              overflow: 'hidden',
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <div style={{
-                padding: '16px',
-                borderBottom: '1px solid #e1e5e9',
-                backgroundColor: '#f8f9fa',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#495057'
-              }}>
-                OpenSCAD Code
+          </header>
+
+          <main className="app-main">
+            {currentView === 'workspace' ? (
+              <div className="workspace-card">
+                <section className="editor-pane">
+                  <div className="pane-header">
+                    <div className="pane-title">OpenSCAD Editor</div>
+                  </div>
+                  <div className="pane-body editor-surface">
+                    <EditorPanel 
+                      className="minimal-editor"
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                  <div className="pane-footer">
+                    <AIPromptPanel 
+                      variant="compact"
+                      className="prompt-panel"
+                    />
+                  </div>
+                </section>
+
+                <section className="viewer-pane">
+                  <div className="pane-header viewer-header">
+                    <div className="pane-title">3D Preview</div>
+                    <div className="pane-actions">
+                      <ExportButton className="pane-export" />
+                    </div>
+                  </div>
+                  <div className="pane-body viewer-surface">
+                    <ViewerPanel 
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                </section>
               </div>
-              <div style={{ flex: '1' }}>
-                <EditorPanel 
-                  className="minimal-editor"
-                  style={{ 
-                    height: '100%',
-                    border: 'none',
-                    borderRadius: '0'
-                  }} 
+            ) : (
+              <div className="museum-card-grid">
+                <Museum 
+                  onModelSelect={(scadCode) => {
+                    model.source = scadCode;
+                    setCurrentView('workspace');
+                  }}
                 />
               </div>
-            </div>
+            )}
+          </main>
 
-            {/* Right Side - 3D Preview */}
-            <div style={{
-              flex: '1',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e1e5e9',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              overflow: 'hidden',
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <div style={{
-                padding: '16px',
-                borderBottom: '1px solid #e1e5e9',
-                backgroundColor: '#f8f9fa',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#495057',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <span>3D Preview</span>
-                <ExportButton />
-              </div>
-              <div style={{ flex: '1' }}>
-                <ViewerPanel 
-                  style={{ 
-                    height: '100%',
-                    border: 'none',
-                    borderRadius: '0'
-                  }} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Section - AI Generator (Full Width) */}
-          <div style={{
-            height: '200px',
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            border: '1px solid #e1e5e9',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            overflow: 'hidden',
-            margin: '0 16px 16px 16px'
-          }}>
-            <AIPromptPanel 
-              style={{
-                height: '100%',
-                margin: '0',
-                borderRadius: '0'
-              }}
-            />
-              </div>
-
-              {/* <Footer /> */} {/* Commented out - export functionality moved to 3D Preview header */}
-            </>
-          ) : (
-            /* Gallery View */
-            <div style={{ flex: '1', overflow: 'hidden' }}>
-              <Gallery 
-                model={model}
-                onModelSelect={(scadCode) => {
-                  model.source = scadCode;
-                  setCurrentView('workspace');
-                }}
-              />
-            </div>
-          )}
-          
           <ConfirmDialog />
         </div>
       </FSContext.Provider>
