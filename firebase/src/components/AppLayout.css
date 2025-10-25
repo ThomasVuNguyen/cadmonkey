@@ -1,183 +1,329 @@
+/* CADMonkey UI - Blue Theme Design */
 .app-shell {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f7f8fb 0%, #eff3f9 100%);
-  padding: 40px 48px;
+  background: url('/background.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Header Styles */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 32px;
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
 }
 
 .app-title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #1d2939;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  letter-spacing: -0.5px;
 }
 
 .app-view-toggle {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #d0d5dd;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  justify-content: center;
+  gap: 8px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .toggle-button {
-  padding: 8px 22px;
-  border-radius: 12px;
-  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
   background: transparent;
-  color: #475467;
+  color: #6b7280;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  box-shadow: none;
+}
+
+.toggle-button:hover {
+  background: #f9fafb;
+  color: #374151;
+  border-color: #9ca3af;
 }
 
 .toggle-button.is-active {
-  background: linear-gradient(135deg, #e1e9ff 0%, #f3f6ff 100%);
-  color: #344054;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+  background: #1a1a1a;
+  color: #ffffff;
+  border-color: #1a1a1a;
+  box-shadow: none;
 }
 
+.app-version {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Main Content Area */
 .app-main {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: stretch;
-}
-
-.workspace-card {
-  width: 100%;
-  max-width: 1340px;
-  display: flex;
-  gap: 40px;
-  background: #ffffff;
-  border-radius: 28px;
-  padding: 36px;
-  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(208, 213, 221, 0.6);
+  padding: 24px;
   min-height: 0;
 }
 
+/* Workspace Card - Full Screen Split View */
+.workspace-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 16px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+  min-height: 0;
+  position: relative;
+  overflow: visible;
+}
+
+/* Panes - Split Screen Layout */
 .editor-pane,
 .viewer-pane {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+/* Editor Pane Processing Animation */
+.editor-pane.processing {
+  border: 2px solid #3b82f6;
+  box-shadow: 
+    0 0 0 1px #3b82f6,
+    0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 40px rgba(59, 130, 246, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: editorProcessing 2s ease-in-out infinite;
+}
+
+@keyframes editorProcessing {
+  0% {
+    box-shadow: 
+      0 0 0 1px #3b82f6,
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.2),
+      0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 2px #3b82f6,
+      0 0 30px rgba(59, 130, 246, 0.5),
+      0 0 60px rgba(59, 130, 246, 0.3),
+      0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 1px #3b82f6,
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.2),
+      0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Viewer Pane Completion Animation */
+.viewer-pane.completed {
+  border: 2px solid #10b981;
+  box-shadow: 
+    0 0 0 1px #10b981,
+    0 0 20px rgba(16, 185, 129, 0.3),
+    0 0 40px rgba(16, 185, 129, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: viewerCompleted 1.5s ease-out;
+}
+
+@keyframes viewerCompleted {
+  0% {
+    box-shadow: 
+      0 0 0 1px #10b981,
+      0 0 20px rgba(16, 185, 129, 0.3),
+      0 0 40px rgba(16, 185, 129, 0.2),
+      0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 3px #10b981,
+      0 0 40px rgba(16, 185, 129, 0.6),
+      0 0 80px rgba(16, 185, 129, 0.4),
+      0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 1px #10b981,
+      0 0 20px rgba(16, 185, 129, 0.3),
+      0 0 40px rgba(16, 185, 129, 0.2),
+      0 4px 20px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .editor-pane {
-  padding-right: 32px;
-  border-right: 1px solid #e9ecf2;
+  border-right: none;
 }
 
 .viewer-pane {
-  padding-left: 32px;
+  /* No border needed */
 }
 
+/* Pane Headers */
 .pane-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  display: none;
 }
 
 .pane-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #344054;
+  display: none;
 }
 
-.pane-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
+/* Pane Bodies - Full Height */
 .pane-body {
   flex: 1;
   display: flex;
   min-height: 0;
+  position: relative;
 }
 
-.editor-surface {
-  border-radius: 22px;
-  background: linear-gradient(180deg, #fdfdfd 0%, #f3f6fb 100%);
-  border: 1px solid #e4e7ec;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
-  overflow: hidden;
-}
-
-.viewer-surface {
-  border-radius: 22px;
-  background: radial-gradient(circle at 10% 10%, rgba(243, 246, 252, 0.9), #ffffff);
-  border: 1px solid #e4e7ec;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
-  overflow: hidden;
-}
-
+/* Pane Footer */
 .pane-footer {
-  margin-top: 24px;
+  padding: 12px 16px 16px 16px;
+  background: #ffffff;
+  border-top: none;
 }
 
 .prompt-panel {
   width: 100%;
 }
 
-.pane-export .p-splitbutton {
-  border-radius: 10px;
-  border: 1px solid #d0d5dd;
+/* Editor Surface */
+.editor-surface {
+  border-radius: 0;
   background: #ffffff;
-  color: #475467;
-}
-
-.gallery-card {
-  width: 100%;
-  max-width: 1340px;
-  background: #ffffff;
-  border-radius: 28px;
-  padding: 36px;
-  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(208, 213, 221, 0.6);
+  border: none;
+  box-shadow: none;
   overflow: hidden;
+  position: relative;
 }
 
+/* Viewer Surface */
+.viewer-surface {
+  border-radius: 0;
+  background: #ffffff;
+  border: none;
+  box-shadow: none;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Museum Card Grid */
 .museum-card-grid {
   width: 100%;
-  max-width: 1340px;
+  height: 100%;
+  padding: 24px;
+  overflow-y: auto;
 }
 
-@media (max-width: 1200px) {
-  .app-shell {
-    padding: 32px 24px;
-  }
-
+/* Responsive Design */
+@media (max-width: 900px) {
   .workspace-card {
     flex-direction: column;
   }
 
   .editor-pane {
-    padding-right: 0;
     border-right: none;
-    border-bottom: 1px solid #e9ecf2;
-    padding-bottom: 32px;
-    margin-bottom: 32px;
   }
 
   .viewer-pane {
-    padding-left: 0;
+    /* No border needed */
   }
+}
+
+@media (max-width: 768px) {
+  .workspace-card {
+    flex-direction: column;
+  }
+
+  .editor-pane {
+    border-right: none;
+  }
+
+  .app-main {
+    padding: 12px;
+  }
+}
+
+/* Animation for smooth transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.workspace-card {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }

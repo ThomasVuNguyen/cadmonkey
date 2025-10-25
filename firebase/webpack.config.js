@@ -72,7 +72,7 @@ const config = [
         },
       ],
       compress: true,
-      port: 4000,
+      port: 1607,
     },
     plugins: [
       new webpack.EnvironmentPlugin({

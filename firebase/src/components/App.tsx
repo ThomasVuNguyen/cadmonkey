@@ -8,10 +8,8 @@ import ViewerPanel from './ViewerPanel';
 import { ModelContext, FSContext } from './contexts';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import AIPromptPanel from './AIPromptPanel';
-import ExportButton from './ExportButton';
 import Museum from './Museum';
 import './AppLayout.css';
-
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
   const [state, setState] = useState(initialState);
@@ -44,27 +42,30 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
       <FSContext.Provider value={fs}>
         <div className="app-shell">
           <header className="app-header">
-            <h1 className="app-title">CADMonkey by ComfySpace</h1>
+            <h1 className="app-title">CADMonkey</h1>
             <div className="app-view-toggle">
-              <button
-                onClick={() => setCurrentView('workspace')}
-                className={`toggle-button ${currentView === 'workspace' ? 'is-active' : ''}`}
-              >
-                Workspace
-              </button>
               <button
                 onClick={() => setCurrentView('museum')}
                 className={`toggle-button ${currentView === 'museum' ? 'is-active' : ''}`}
+                aria-label="Switch to Gallery view"
               >
-                Museum
+                <span>Gallery</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('workspace')}
+                className={`toggle-button ${currentView === 'workspace' ? 'is-active' : ''}`}
+                aria-label="Switch to Workspace view"
+              >
+                <span>Workspace</span>
               </button>
             </div>
+            <div className="app-version">v1.20</div>
           </header>
 
           <main className="app-main">
             {currentView === 'workspace' ? (
               <div className="workspace-card">
-                <section className="editor-pane">
+                <section className={`editor-pane ${(state.rendering || state.previewing) ? 'processing' : ''}`}>
                   <div className="pane-header">
                     <div className="pane-title">OpenSCAD Editor</div>
                   </div>
@@ -82,12 +83,9 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                   </div>
                 </section>
 
-                <section className="viewer-pane">
-                  <div className="pane-header viewer-header">
+                <section className={`viewer-pane ${state.output && !state.rendering && !state.previewing ? 'completed' : ''}`}>
+                  <div className="pane-header">
                     <div className="pane-title">3D Preview</div>
-                    <div className="pane-actions">
-                      <ExportButton className="pane-export" />
-                    </div>
                   </div>
                   <div className="pane-body viewer-surface">
                     <ViewerPanel 

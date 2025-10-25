@@ -77,13 +77,6 @@ export default function Museum({ onModelSelect }: MuseumProps) {
 
   return (
     <div className="museum-wrapper">
-      <div className="museum-header">
-        <div>
-          <h2>Museum</h2>
-          <p>Interactive snapshots of community creations.</p>
-        </div>
-        <span className="museum-count">{models.length} exhibits</span>
-      </div>
 
       {error && (
         <Message 
@@ -98,32 +91,18 @@ export default function Museum({ onModelSelect }: MuseumProps) {
           <div
             key={doc.id}
             className="museum-card"
+            onClick={() => onModelSelect && onModelSelect(doc.scadCode)}
           >
-            <div className="museum-card-header">
-              <div className="museum-prompt">"{doc.prompt}"</div>
-              <div className="museum-meta">{formatRelativeDate(doc.createdAt)}</div>
-            </div>
-
-            <div className="museum-card-body">
-              <div className="museum-code">
-                <pre>{buildCodePreview(doc.scadCode)}</pre>
-              </div>
-              <div className="museum-viewer">
-                <Mini3DViewer
-                  scadCode={doc.scadCode}
-                  thumbnail={doc.thumbnailUrl}
-                  forceInteractive
-                />
-              </div>
-            </div>
-
-            <div className="museum-card-footer">
-              <Button
-                label="Open in Workspace"
-                icon="pi pi-external-link"
-                className="p-button-text"
-                onClick={() => onModelSelect && onModelSelect(doc.scadCode)}
+            <div className="museum-card-viewer">
+              <Mini3DViewer
+                scadCode={doc.scadCode}
+                thumbnail={doc.thumbnailUrl}
+                forceInteractive
               />
+            </div>
+            
+            <div className="museum-card-info">
+              <div className="museum-card-title">{doc.prompt}</div>
             </div>
           </div>
         ))}

@@ -1,81 +1,49 @@
-.editor-toolbar {
+/* Minimal Editor Panel - 1:1 Match with Mockup */
+
+/* Monaco Editor Container */
+.monaco-editor-container {
+  border-radius: 0;
+  overflow: hidden;
+  background: transparent;
+  box-shadow: none;
+  height: 100%;
+  width: 100%;
+}
+
+/* Editor Loading State */
+.editor-loading {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  margin: 12px 12px 20px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f7fb 100%);
-  border: 1px solid #e4e7ec;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+  justify-content: center;
+  height: 100%;
+  background: transparent;
+  color: var(--gray-500);
+  font-size: 0.875rem;
 }
 
-.editor-toolbar .p-button {
-  font-size: 14px;
+/* Responsive Design */
+@media (max-width: 768px) {
+  .monaco-editor-container {
+    font-size: 12px;
+  }
 }
 
-.toolbar-menu-button.p-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px !important;
-  border: 1px solid #d0d5dd !important;
-  background: #ffffff !important;
-  color: #475467 !important;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+/* Focus and Accessibility */
+.monaco-editor-container:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
 }
 
-.toolbar-menu-button.p-button.p-button-text {
-  padding: 0;
+/* Animation for editor appearance */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.editor-file-picker {
-  flex: 1;
-  min-width: 0;
-}
-
-.editor-file-picker .p-treeselect {
-  width: 100%;
-  border: 1px solid #d0d5dd;
-  border-radius: 14px;
-  background: #ffffff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.editor-file-picker .p-treeselect-label {
-  padding: 10px 14px;
-  font-size: 14px;
-  color: #344054;
-}
-
-.editor-file-picker .p-treeselect-trigger {
-  color: #667085;
-}
-
-.editor-file-picker .p-treeselect:not(.p-disabled):hover {
-  border-color: #b3b8c4;
-}
-
-.editor-file-picker .p-treeselect.p-focus {
-  border-color: #95a4ff;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-
-.toolbar-back-button.p-button {
-  border-radius: 12px;
-  border: 1px solid #d0d5dd;
-  background: #ffffff;
-  color: #475467;
-  padding: 8px 16px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
-}
-
-.toolbar-back-button.p-button .p-button-icon-left {
-  margin-right: 8px;
-}
-
-.file-picker-panel {
-  border-radius: 16px;
-  padding: 8px;
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
-  border: 1px solid #d0d5dd;
+.monaco-editor-container {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

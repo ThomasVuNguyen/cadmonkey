@@ -6,6 +6,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { ModelContext } from './contexts';
 import { ModelService } from '../services/firestore';
+import './AIPromptPanel.css';
 
 interface AIPromptPanelProps {
   className?: string;
@@ -340,222 +341,81 @@ export default function AIPromptPanel({ className, style, variant = 'default' }:
 
   if (variant === 'compact') {
     return (
-      <div className={`ai-prompt-panel ${className ?? ''}`} style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        ...style
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          color: '#495057',
-          fontSize: '14px',
-          fontWeight: 600
-        }}>
-          <span>Prompt</span>
-          {isGenerating && (
-            <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6c757d' }}>
-              <ProgressSpinner style={{ width: '14px', height: '14px', marginRight: '6px' }} strokeWidth="3" />
-              <span>Streaming…</span>
-            </div>
-          )}
+      <div className={`ai-prompt-panel compact ${className ?? ''}`} style={style}>
+        <div className="prompt-input-container">
+          <InputTextarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="a cube"
+            disabled={isLoading}
+            onKeyPress={handleKeyPress}
+            rows={2}
+            className="p-inputtextarea"
+          />
         </div>
-        <InputTextarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Describe your 3D object…"
-          disabled={isLoading}
-          onKeyPress={handleKeyPress}
-          rows={2}
-          style={{
-            width: '100%',
-            borderRadius: '10px',
-            border: '1px solid #d0d5dd',
-            background: '#f9fafc',
-            color: '#495057',
-            fontSize: '14px',
-            padding: '12px',
-            resize: 'none',
-            transition: 'all 0.2s ease'
-          }}
-          className="ai-prompt-input"
+        
+        
+        <Button
+          label={isLoading ? "Making..." : "Make"}
+          icon=""
+          onClick={handleGenerate}
+          disabled={!prompt.trim() || isLoading}
+          className={`generate-button ${isLoading ? 'loading' : ''}`}
         />
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button
-            label={isLoading ? "Generating..." : "Generate"}
-            icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-magic-wand"}
-            onClick={handleGenerate}
-            disabled={!prompt.trim() || isLoading}
-            className="p-button-primary"
-            style={{
-              flex: 1,
-              height: '38px',
-              borderRadius: '10px',
-              background: isLoading ? '#6c757d' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.2s ease'
-            }}
-          />
-        </div>
+        
         {error && (
-          <Message 
-            severity="error" 
-            text={error}
-            style={{
-              borderRadius: '10px',
-              background: '#f8d7da',
-              border: '1px solid #f5c6cb',
-              color: '#721c24',
-              fontSize: '12px'
-            }}
-          />
+          <div className="prompt-error">
+            {error}
+          </div>
         )}
-        <style>{`
-          .ai-prompt-input::placeholder {
-            color: #adb5bd;
-          }
-          
-          .ai-prompt-input:focus {
-            border-color: #667eea !important;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.12) !important;
-            background: white !important;
-          }
-        `}</style>
       </div>
     );
   }
 
   return (
-    <div className={`ai-prompt-panel ${className ?? ''}`} style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '16px',
-      ...style
-    }}>
+    <div className={`ai-prompt-panel default ${className ?? ''}`} style={style}>
       {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        marginBottom: '12px',
-        color: '#495057'
-      }}>
-        <div style={{
-          width: '24px',
-          height: '24px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginRight: '8px',
-          fontSize: '12px'
-        }}>
+      <div className="prompt-header">
+        <div className="prompt-icon">
           🤖
         </div>
         <div>
-          <h4 style={{ margin: '0', fontSize: '14px', fontWeight: '600' }}>
-            AI Generator
-          </h4>
+          <h4 className="prompt-title">AI Generator</h4>
         </div>
       </div>
 
       {/* Input Section */}
-      <div style={{ marginBottom: '12px', flex: 1 }}>
+      <div className="prompt-input-container">
         <InputTextarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe your 3D object..."
           disabled={isLoading}
           onKeyPress={handleKeyPress}
-          rows={2}
-          style={{
-            width: '100%',
-            borderRadius: '8px',
-            border: '1px solid #e1e5e9',
-            background: '#f8f9fa',
-            color: '#495057',
-            fontSize: '14px',
-            padding: '12px',
-            resize: 'none',
-            transition: 'all 0.2s ease'
-          }}
-          className="ai-prompt-input"
+          rows={3}
+          className="p-inputtextarea"
         />
       </div>
 
       {/* Generate Button */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div className="prompt-actions">
         <Button
-          label={isLoading ? "Generating..." : "Generate"}
-          icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-magic-wand"}
+          label={isLoading ? "Making..." : "Make"}
+          icon=""
           onClick={handleGenerate}
           disabled={!prompt.trim() || isLoading}
-          className="p-button-primary"
-          style={{
-            flex: 1,
-            height: '36px',
-            borderRadius: '8px',
-            background: isLoading ? '#6c757d' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: '500',
-            transition: 'all 0.2s ease'
-          }}
+          className={`generate-button ${isLoading ? 'loading' : ''}`}
         />
         
-        {/* Generation Status */}
-        {isGenerating && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            color: '#6c757d',
-            fontSize: '12px'
-          }}>
-            <ProgressSpinner 
-              style={{ width: '16px', height: '16px', marginRight: '6px' }}
-              strokeWidth="3"
-            />
-            <span>Streaming...</span>
-          </div>
-        )}
       </div>
 
       {/* Error Message */}
       {error && (
-        <div style={{ marginTop: '8px' }}>
-          <Message 
-            severity="error" 
-            text={error}
-            style={{
-              borderRadius: '8px',
-              background: '#f8d7da',
-              border: '1px solid #f5c6cb',
-              color: '#721c24',
-              fontSize: '12px'
-            }}
-          />
+        <div className="prompt-error">
+          {error}
         </div>
       )}
 
-      {/* Custom Styles */}
-      <style>{`
-        .ai-prompt-input::placeholder {
-          color: #adb5bd;
-        }
-        
-        .ai-prompt-input:focus {
-          border-color: #667eea !important;
-          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
-          background: white !important;
-        }
-      `}</style>
     </div>
   );
 }

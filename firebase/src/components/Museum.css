@@ -1,173 +1,177 @@
+/* Clean Museum Gallery Styles */
 .museum-wrapper {
-  background: #ffffff;
-  border-radius: 28px;
-  padding: 32px;
-  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(208, 213, 221, 0.6);
+  background: transparent;
+  border-radius: 0;
+  padding: 24px;
+  box-shadow: none;
+  border: none;
+  position: relative;
 }
 
 .museum-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+  position: relative;
 }
 
 .museum-header h2 {
   margin: 0;
-  font-size: 22px;
-  color: #1d2939;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .museum-header p {
-  margin: 6px 0 0;
-  color: #667085;
+  margin: 4px 0 0;
+  color: #6b7280;
   font-size: 14px;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .museum-count {
   font-size: 14px;
-  color: #475467;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.18), rgba(118, 75, 162, 0.1));
-  border: 1px solid rgba(102, 126, 234, 0.3);
+  font-weight: 600;
+  color: #8B5CF6;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
+/* Museum Grid */
 .museum-grid {
   display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 32px;
+  margin-bottom: 32px;
+  justify-items: center;
+  padding: 0;
 }
 
+/* Museum Card - Floating Square Design */
 .museum-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 200px;
+  height: 200px;
   display: flex;
   flex-direction: column;
-  border-radius: 22px;
-  background: linear-gradient(180deg, #fdfdfd 0%, #f3f6fb 100%);
-  border: 1px solid #e4e7ec;
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
+  margin: 0 auto;
 }
 
-.museum-card-header {
-  padding: 20px 24px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+.museum-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transform: translateY(-6px);
 }
 
-.museum-prompt {
+/* Top Section - Square 3D Viewer */
+.museum-card-viewer {
   flex: 1;
-  color: #344054;
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.museum-meta {
-  font-size: 12px;
-  color: #667085;
-  white-space: nowrap;
-}
-
-.museum-card-body {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 18px;
-  padding: 0 24px 24px;
-}
-
-.museum-code {
-  background: #0f172a;
-  color: #e2e8f0;
-  border-radius: 18px;
-  padding: 16px 18px;
-  box-shadow: inset 0 0 20px rgba(15, 23, 42, 0.4);
-  font-family: 'Source Code Pro', 'Fira Code', Menlo, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.5;
+  background: #ffffff;
   position: relative;
-  overflow: hidden;
-}
-
-.museum-code pre {
-  margin: 0;
-  white-space: pre;
-  max-height: 240px;
-  overflow: hidden;
-}
-
-.museum-code::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 32px;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 100%);
-}
-
-.museum-viewer {
-  border-radius: 18px;
-  background: radial-gradient(circle at 20% 20%, rgba(243, 246, 252, 0.95), #ffffff);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  overflow: hidden;
-  min-height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  border: none;
+  width: 100%;
+  height: 150px;
 }
 
-.museum-card-footer {
-  padding: 0 24px 24px;
+.museum-card-viewer model-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+}
+
+/* Bottom Section - Blue Bar */
+.museum-card-info {
+  background: #3A37FA;
+  padding: 8px 12px;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  width: 100%;
 }
 
-.museum-card-footer .p-button {
-  border-radius: 12px;
-  color: #475467;
-}
-
-.museum-load {
+.museum-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFA500;
+  margin: 0;
+  font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   text-align: center;
-  margin-top: 28px;
 }
 
-.museum-load .p-button {
-  border-radius: 12px;
-  padding: 12px 24px;
+/* Remove old styles */
+.museum-card-header,
+.museum-card-body,
+.museum-code,
+.museum-card-footer {
+  display: none;
 }
 
-.museum-end {
-  margin-top: 20px;
-  text-align: center;
-  color: #667085;
-  font-size: 14px;
-}
-
+/* Museum Loading */
 .museum-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 80px 0;
-  color: #667085;
+  padding: 48px;
+  color: #6b7280;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .museum-loading p {
-  margin: 0;
+  margin-top: 16px;
+  font-size: 14px;
 }
 
-@media (max-width: 1100px) {
-  .museum-card-body {
-    grid-template-columns: 1fr;
-  }
+/* Museum Load More */
+.museum-load {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
 
+.museum-end {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 32px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .museum-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .museum-card-body {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .museum-code {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
   .museum-viewer {
-    min-height: 200px;
+    height: 200px;
   }
 }

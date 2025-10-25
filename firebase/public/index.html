@@ -127,54 +127,8 @@
     </audio>
 
     <noscript>You need to enable JavaScript to run the OpenSCAD Playground.</noscript>
-    
-    <!-- Version indicator -->
-    <!-- 
-      IMPORTANT: Update version number on every deployment to Firebase!
-      This helps track which version is currently deployed and when it was updated.
-      Format: vX.Y.Z (e.g., v1.0.0, v1.1.0, v2.0.0)
-      The build timestamp is automatically added by JavaScript.
-    -->
-    <div id="version-indicator" style="
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-family: monospace;
-      z-index: 1000;
-      opacity: 0.8;
-      cursor: pointer;
-    " title="Click to copy version info">
-      v1.18.0
-    </div>
 
-    <script>
-      // Update version with build timestamp
-      // NOTE: Remember to update the version number above when deploying!
-      (function() {
-        const versionEl = document.getElementById('version-indicator');
-        if (versionEl) {
-          const buildTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-          versionEl.textContent = `v1.18.0 (${buildTime})`;
 
-          // Add click to copy functionality
-          versionEl.addEventListener('click', function() {
-            const versionInfo = `CADMonkey by ComfySpace v1.18.0\nBuild: ${buildTime}\nURL: ${window.location.href}`;
-            navigator.clipboard.writeText(versionInfo).then(() => {
-              const originalText = versionEl.textContent;
-              versionEl.textContent = 'Copied!';
-              setTimeout(() => {
-                versionEl.textContent = originalText;
-              }, 1000);
-            });
-          });
-        }
-      })();
-    </script>
     
     <div id="root"></div>
   </body>
