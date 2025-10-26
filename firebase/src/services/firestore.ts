@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, startAfter, Timestamp, updateDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, startAfter, Timestamp, updateDoc, doc, increment } from 'firebase/firestore';
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 // Firebase configuration
@@ -24,11 +24,23 @@ export interface ModelDocument {
   prompt: string;
   scadCode: string;
   thumbnailUrl?: string; // Firebase Storage URL for thumbnail image
+  likes?: number; // Number of likes
+  dislikes?: number; // Number of dislikes
+}
+
+// User preference interface
+export interface UserPreference {
+  id: string;
+  modelId: string;
+  userId: string; // Could be session ID or user ID
+  preference: 'like' | 'dislike';
+  timestamp: Timestamp;
 }
 
 // Model service
 export class ModelService {
   private static collection = collection(db, 'models');
+  private static preferencesCollection = collection(db, 'preferences');
 
   // Upload thumbnail to Firebase Storage and return the download URL
   static async uploadThumbnail(thumbnailDataUrl: string, modelId: string): Promise<string> {
@@ -149,5 +161,64 @@ export class ModelService {
       console.error('Error getting paginated models:', error);
       throw error;
     }
+  }
+
+  // Record user preference (like/dislike)
+  static async recordPreference(modelId: string, preference: 'like' | 'dislike', userId?: string): Promise<void> {
+    try {
+      const sessionId = userId || this.getSessionId();
+      
+      // Record the preference
+      await addDoc(this.preferencesCollection, {
+        modelId,
+        userId: sessionId,
+        preference,
+        timestamp: Timestamp.now()
+      });
+
+      // Update model counters
+      const modelRef = doc(db, 'models', modelId);
+      const fieldToUpdate = preference === 'like' ? 'likes' : 'dislikes';
+      
+      await updateDoc(modelRef, {
+        [fieldToUpdate]: increment(1)
+      });
+
+      console.log(`✅ [PREFERENCE] Recorded ${preference} for model ${modelId}`);
+    } catch (error) {
+      console.error('Error recording preference:', error);
+      throw error;
+    }
+  }
+
+  // Get user preferences for analytics
+  static async getUserPreferences(userId?: string): Promise<UserPreference[]> {
+    try {
+      const sessionId = userId || this.getSessionId();
+      const q = query(
+        this.preferencesCollection,
+        orderBy('timestamp', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as UserPreference[];
+    } catch (error) {
+      console.error('Error getting user preferences:', error);
+      throw error;
+    }
+  }
+
+  // Generate or get session ID for anonymous users
+  private static getSessionId(): string {
+    let sessionId = localStorage.getItem('cadmonkey_session_id');
+    if (!sessionId) {
+      sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('cadmonkey_session_id', sessionId);
+    }
+    return sessionId;
   }
 }

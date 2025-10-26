@@ -59,6 +59,11 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow: hidden;
+  height: 100vh;
+}
+
 body {
   margin: 0;
   font-family: var(--font-primary);
@@ -68,6 +73,8 @@ body {
   background-color: #4545FF;
   color: #333333;
   line-height: 1.6;
+  overflow: hidden;
+  height: 100vh;
 }
 
 code {

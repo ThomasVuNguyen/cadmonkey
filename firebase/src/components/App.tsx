@@ -42,7 +42,9 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
       <FSContext.Provider value={fs}>
         <div className="app-shell">
           <header className="app-header">
-            <h1 className="app-title">CADMonkey</h1>
+            <div className="app-title">
+              <img src="/icon.png" alt="CADMonkey" className="app-logo" />
+            </div>
             <div className="app-view-toggle">
               <button
                 onClick={() => setCurrentView('museum')}
@@ -59,7 +61,7 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                 <span>Workspace</span>
               </button>
             </div>
-            <div className="app-version">v1.20</div>
+            <div className="app-version">v1.21</div>
           </header>
 
           <main className="app-main">
