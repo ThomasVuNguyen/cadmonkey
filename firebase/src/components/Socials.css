@@ -3,13 +3,13 @@
   height: 100%;
   padding: 20px;
   overflow-y: auto;
-  background: #fafafa;
+  background: transparent;
 }
 
 @media (max-width: 768px) {
   .socials-container {
     padding: 0;
-    background: white;
+    background: transparent;
   }
 }
 
@@ -28,7 +28,7 @@
   margin: 0 auto 20px auto;
   text-align: center;
   padding: 12px 16px;
-  background: white;
+  background: transparent;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -37,7 +37,7 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #262626;
+  color: #ffffff;
 }
 
 @media (max-width: 768px) {
@@ -51,6 +51,64 @@
 
   .socials-count p {
     font-size: 13px;
+  }
+}
+
+.discord-join-container {
+  max-width: 600px;
+  margin: 0 auto 20px auto;
+}
+
+.discord-join-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(88, 101, 242, 0.3);
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.discord-join-button:hover {
+  background: linear-gradient(135deg, #4752C4 0%, #5B6DAF 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+}
+
+.discord-join-button:active {
+  transform: translateY(0);
+}
+
+.discord-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.discord-text {
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .discord-join-container {
+    max-width: 100%;
+    margin: 0 0 16px 0;
+  }
+
+  .discord-join-button {
+    border-radius: 0;
+    margin: 0 12px;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .discord-icon {
+    font-size: 16px;
   }
 }
 

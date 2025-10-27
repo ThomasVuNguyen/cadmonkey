@@ -117,6 +117,46 @@
   box-shadow: none;
 }
 
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.discord-header-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(88, 101, 242, 0.3);
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.discord-header-button:hover {
+  background: linear-gradient(135deg, #4752C4 0%, #5B6DAF 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+}
+
+.discord-header-button:active {
+  transform: translateY(0);
+}
+
+.discord-header-button .discord-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.discord-header-button .discord-text {
+  user-select: none;
+}
+
 .app-version {
   font-size: 18px;
   font-weight: 600;
@@ -128,6 +168,16 @@
   .app-version {
     font-size: 14px;
     display: none;
+  }
+
+  .discord-header-button {
+    padding: 6px 12px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .discord-header-button .discord-icon {
+    font-size: 14px;
   }
 }
 

@@ -61,7 +61,18 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                 <span>Workspace</span>
               </button>
             </div>
-            <div className="app-version">v1.21</div>
+            <div className="app-header-right">
+              <a 
+                href="https://discord.gg/rQWPPPNMmZ" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="discord-header-button"
+              >
+                <span className="discord-icon">💬</span>
+                <span className="discord-text">Discord</span>
+              </a>
+              <div className="app-version">v1.21</div>
+            </div>
           </header>
 
           <main className="app-main">
