@@ -8,12 +8,12 @@ import ViewerPanel from './ViewerPanel';
 import { ModelContext, FSContext } from './contexts';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import AIPromptPanel from './AIPromptPanel';
-import Museum from './Museum';
+import Socials from './Socials';
 import './AppLayout.css';
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
   const [state, setState] = useState(initialState);
-  const [currentView, setCurrentView] = useState<'workspace' | 'museum'>('workspace');
+  const [currentView, setCurrentView] = useState<'workspace' | 'gallery'>('workspace');
   
   const model = new Model(fs, state, setState, statePersister);
   useEffect(() => model.init());
@@ -47,8 +47,8 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
             </div>
             <div className="app-view-toggle">
               <button
-                onClick={() => setCurrentView('museum')}
-                className={`toggle-button ${currentView === 'museum' ? 'is-active' : ''}`}
+                onClick={() => setCurrentView('gallery')}
+                className={`toggle-button ${currentView === 'gallery' ? 'is-active' : ''}`}
                 aria-label="Switch to Gallery view"
               >
                 <span>Gallery</span>
@@ -97,8 +97,8 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                 </section>
               </div>
             ) : (
-              <div className="museum-card-grid">
-                <Museum 
+              <div className="gallery-card-grid">
+                <Socials 
                   onModelSelect={(scadCode) => {
                     model.source = scadCode;
                     setCurrentView('workspace');

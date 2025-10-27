@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, startAfter, Timestamp, updateDoc, doc, increment } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, startAfter, Timestamp, updateDoc, doc, increment, where } from 'firebase/firestore';
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 // Firebase configuration
@@ -37,10 +37,20 @@ export interface UserPreference {
   timestamp: Timestamp;
 }
 
+// Comment interface
+export interface Comment {
+  id: string;
+  modelId: string;
+  text: string;
+  userId: string;
+  timestamp: Timestamp;
+}
+
 // Model service
 export class ModelService {
   private static collection = collection(db, 'models');
   private static preferencesCollection = collection(db, 'preferences');
+  private static commentsCollection = collection(db, 'comments');
 
   // Upload thumbnail to Firebase Storage and return the download URL
   static async uploadThumbnail(thumbnailDataUrl: string, modelId: string): Promise<string> {
@@ -220,5 +230,67 @@ export class ModelService {
       localStorage.setItem('cadmonkey_session_id', sessionId);
     }
     return sessionId;
+  }
+
+  // Add a comment to a model
+  static async addComment(modelId: string, text: string, userId?: string): Promise<string> {
+    try {
+      const sessionId = userId || this.getSessionId();
+      const docRef = await addDoc(this.commentsCollection, {
+        modelId,
+        text: text.trim(),
+        userId: sessionId,
+        timestamp: Timestamp.now()
+      });
+      console.log(`✅ [COMMENT] Added comment to model ${modelId}`);
+      return docRef.id;
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      throw error;
+    }
+  }
+
+  // Get comments for a model
+  static async getComments(modelId: string): Promise<Comment[]> {
+    try {
+      const q = query(
+        this.commentsCollection,
+        where('modelId', '==', modelId),
+        orderBy('timestamp', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Comment[];
+    } catch (error) {
+      console.error('Error getting comments:', error);
+      throw error;
+    }
+  }
+
+  // Get total count of renderable models (models with valid scadCode)
+  static async getTotalRenderableCount(): Promise<number> {
+    try {
+      const q = query(this.collection, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const models = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ModelDocument[];
+      
+      // Filter to only count renderable models
+      const renderableModels = models.filter(model => 
+        model.scadCode && 
+        model.scadCode.trim().length > 0 &&
+        model.scadCode.trim() !== '' &&
+        model.scadCode !== 'undefined'
+      );
+      
+      return renderableModels.length;
+    } catch (error) {
+      console.error('Error getting total count:', error);
+      throw error;
+    }
   }
 }

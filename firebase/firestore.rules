@@ -12,5 +12,11 @@ service cloud.firestore {
       allow read: if true;  // Public read access for analytics
       allow write: if true; // Anyone can record preferences
     }
+    
+    // Comments collection - public read/write for social features
+    match /comments/{commentId} {
+      allow read: if true;  // Public read access
+      allow write: if true; // Anyone can create comments
+    }
   }
 }

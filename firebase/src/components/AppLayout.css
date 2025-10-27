@@ -20,6 +20,17 @@
   background: transparent;
   border-bottom: none;
   box-shadow: none;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .app-title {
@@ -28,10 +39,23 @@
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .app-title {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .app-logo {
   height: 40px;
   width: auto;
   object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .app-logo {
+    height: 32px;
+  }
 }
 
 .app-view-toggle {
@@ -49,6 +73,16 @@
   transform: translateX(-50%);
 }
 
+@media (max-width: 768px) {
+  .app-view-toggle {
+    gap: 4px;
+    position: relative;
+    left: auto;
+    transform: none;
+    flex: 0;
+  }
+}
+
 .toggle-button {
   padding: 10px 24px;
   border-radius: 6px;
@@ -61,6 +95,13 @@
   transition: all 0.2s ease;
   font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .toggle-button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
 }
 
 .toggle-button:hover {
@@ -83,6 +124,13 @@
   font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
+@media (max-width: 768px) {
+  .app-version {
+    font-size: 14px;
+    display: none;
+  }
+}
+
 /* Main Content Area */
 .app-main {
   flex: 1;
@@ -102,8 +150,8 @@
   gap: 16px;
 }
 
-/* Museum and Analytics Card Grids */
-.museum-card-grid,
+/* Gallery and Analytics Card Grids */
+.gallery-card-grid,
 .analytics-card-grid {
   width: 100%;
   height: 100%;
@@ -287,14 +335,21 @@
 @media (max-width: 768px) {
   .workspace-card {
     flex-direction: column;
+    gap: 8px;
   }
 
   .editor-pane {
     border-right: none;
+    border-radius: 8px;
   }
 
   .app-main {
-    padding: 12px;
+    padding: 8px;
+  }
+
+  .editor-pane,
+  .viewer-pane {
+    border-radius: 8px;
   }
 }
 
