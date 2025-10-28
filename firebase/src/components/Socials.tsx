@@ -62,11 +62,30 @@ export default function Socials({ onModelSelect }: SocialsProps) {
   const [hasMore, setHasMore] = useState(true);
   const [submittingComments, setSubmittingComments] = useState<Set<string>>(new Set());
   const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PostWithComments[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     loadPosts(true);
     loadTotalCount();
   }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timeoutId = setTimeout(async () => {
+      await performSearch(searchQuery);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   async function loadTotalCount() {
     try {
@@ -74,6 +93,61 @@ export default function Socials({ onModelSelect }: SocialsProps) {
       setTotalCount(count);
     } catch (err) {
       console.error('Error loading total count:', err);
+    }
+  }
+
+  async function performSearch(query: string) {
+    try {
+      setIsSearching(true);
+      setError(null);
+      console.log(`🔍 Performing server-side search for: "${query}"`);
+
+      const models = await ModelService.searchModels(query, 100); // Search top 100 recent models
+
+      // Filter and validate models (same as loadPosts)
+      const basicValidModels = models.filter(model =>
+        model.scadCode &&
+        model.scadCode.trim().length > 0 &&
+        model.scadCode.trim() !== '' &&
+        model.scadCode !== 'undefined'
+      );
+
+      console.log(`🔍 Validating ${basicValidModels.length} search results for rendering...`);
+      const renderableModels = [];
+      for (const model of basicValidModels) {
+        const isValid = await validateScadCode(model.scadCode);
+        if (isValid) {
+          renderableModels.push(model);
+        }
+      }
+      console.log(`📊 Search returned ${renderableModels.length} valid models`);
+
+      const postsWithComments = renderableModels.map(model => ({
+        ...model,
+        comments: [],
+        showComments: true,
+        commentText: ''
+      }));
+
+      // Load comments
+      const postsWithCommentsData = await Promise.all(
+        postsWithComments.map(async (post) => {
+          try {
+            const comments = await ModelService.getComments(post.id);
+            return { ...post, comments };
+          } catch (err) {
+            console.error(`Error loading comments for ${post.id}:`, err);
+            return { ...post, comments: [] };
+          }
+        })
+      );
+
+      setSearchResults(postsWithCommentsData);
+    } catch (err) {
+      console.error('Error performing search:', err);
+      setError('Unable to search models right now.');
+    } finally {
+      setIsSearching(false);
     }
   }
 
@@ -222,6 +296,9 @@ export default function Socials({ onModelSelect }: SocialsProps) {
     return 'just now';
   };
 
+  // Determine which posts to display
+  const displayPosts = searchQuery.trim() !== '' ? searchResults : posts;
+
   if (loading && posts.length === 0) {
     return (
       <div className="socials-loading">
@@ -248,8 +325,27 @@ export default function Socials({ onModelSelect }: SocialsProps) {
         </div>
       )}
 
+      {/* Search Input */}
+      <div className="search-filter-container">
+        <InputText
+          placeholder="Search prompts across database..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input"
+          disabled={isSearching}
+        />
+        {isSearching && (
+          <ProgressSpinner style={{ width: '20px', height: '20px' }} />
+        )}
+        {searchQuery && !isSearching && (
+          <span className="search-results-count">
+            {displayPosts.length} result{displayPosts.length !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+
       <div className="socials-feed">
-        {posts.map((post) => (
+        {displayPosts.map((post) => (
           <div key={post.id} className="social-post">
             {/* Post Header */}
             <div className="post-header">
@@ -349,8 +445,8 @@ export default function Socials({ onModelSelect }: SocialsProps) {
         ))}
       </div>
 
-      {/* Load More Button */}
-      {hasMore && (
+      {/* Load More Button - Only show when not searching */}
+      {hasMore && !searchQuery && (
         <div className="load-more-container">
           <Button
             label="Load More"
@@ -359,6 +455,14 @@ export default function Socials({ onModelSelect }: SocialsProps) {
             loading={loading}
             className="load-more-button"
           />
+        </div>
+      )}
+
+      {/* No results message for search */}
+      {searchQuery && !isSearching && displayPosts.length === 0 && (
+        <div className="no-results-message">
+          <p>No models found matching "{searchQuery}"</p>
+          <p className="no-results-hint">Try a different search term</p>
         </div>
       )}
     </div>

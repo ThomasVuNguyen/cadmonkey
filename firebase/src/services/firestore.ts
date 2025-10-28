@@ -162,13 +162,51 @@ export class ModelService {
       })) as ModelDocument[];
 
       const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-      
+
       return {
         models,
         lastDoc: lastVisible
       };
     } catch (error) {
       console.error('Error getting paginated models:', error);
+      throw error;
+    }
+  }
+
+  // Search models by prompt text (server-side)
+  // Note: Firestore doesn't support full-text search natively, so we fetch all and filter
+  // For production with large datasets, consider using Algolia or similar
+  static async searchModels(searchQuery: string, limitCount: number = 50): Promise<ModelDocument[]> {
+    try {
+      if (!searchQuery || searchQuery.trim() === '') {
+        return [];
+      }
+
+      const searchLower = searchQuery.toLowerCase().trim();
+
+      // Fetch a large batch of recent models
+      const q = query(
+        this.collection,
+        orderBy('createdAt', 'desc'),
+        limit(limitCount)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const allModels = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ModelDocument[];
+
+      // Filter models that contain the search term in their prompt
+      const filteredModels = allModels.filter(model =>
+        model.prompt &&
+        model.prompt.toLowerCase().includes(searchLower)
+      );
+
+      console.log(`🔍 [SEARCH] Found ${filteredModels.length} models matching "${searchQuery}"`);
+      return filteredModels;
+    } catch (error) {
+      console.error('Error searching models:', error);
       throw error;
     }
   }
