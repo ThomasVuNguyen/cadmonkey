@@ -1,1 +1,0 @@
-../libs/openscad-wasm/openscad.js

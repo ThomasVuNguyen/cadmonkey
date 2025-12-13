@@ -307,9 +307,6 @@
   border-right: none;
 }
 
-.viewer-pane {
-  /* No border needed */
-}
 
 /* Pane Headers */
 .pane-header {
@@ -377,9 +374,6 @@
     border-right: none;
   }
 
-  .viewer-pane {
-    /* No border needed */
-  }
 }
 
 @media (max-width: 768px) {
