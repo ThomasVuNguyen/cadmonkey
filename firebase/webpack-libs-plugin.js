@@ -177,7 +177,12 @@ class OpenSCADLibrariesPlugin {
             await this.downloadFile(wasmBuild.url, wasmZip);
 
             console.log(`Extracting WASM to ${wasmDir}`);
-            await execAsync(`cd ${wasmDir} && unzip ../${path.basename(wasmZip)}`);
+            const zipName = path.basename(wasmZip);
+            const unzipCmd =
+                process.platform === 'win32'
+                    ? `powershell -Command "Expand-Archive -Path ../${zipName} -DestinationPath . -Force"`
+                    : `unzip ../${zipName}`;
+            await execAsync(`cd ${wasmDir} && ${unzipCmd}`);
         }
 
         await this.ensureDir('public');

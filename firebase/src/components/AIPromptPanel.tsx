@@ -23,9 +23,8 @@ export default function AIPromptPanel({ className, style, variant = 'default' }:
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Backend URLs
-  const BACKEND_URL = 'https://thomas-15--cadmonkey-chat-chat-dev.modal.run';
-  const STREAM_URL = 'https://thomas-15--cadmonkey-chat-chat-stream-dev.modal.run';
+  // Backend URLs (streaming SSE endpoint returns raw formatting)
+  const STREAM_URL = 'https://thomas-15--cadmonkey-chat-chat-stream.modal.run';
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -43,7 +42,7 @@ export default function AIPromptPanel({ className, style, variant = 'default' }:
         },
         body: JSON.stringify({
           message: `hey cadmonkey, make me ${prompt}`,
-          max_tokens: 2000,
+          max_tokens: 4096,
           temperature: 0.7
         })
       });
@@ -78,16 +77,9 @@ export default function AIPromptPanel({ className, style, variant = 'default' }:
               const data = JSON.parse(line.slice(6));
               
               if (data.token) {
-                // Clean up the token
-                let cleanToken = data.token;
-                if (cleanToken.startsWith('Assistant:')) {
-                  cleanToken = cleanToken.replace('Assistant:', '').trim();
-                }
-                if (cleanToken && !cleanToken.startsWith('User:')) {
-                  generatedCode += cleanToken + '\n';
-                  // Update the editor in real-time
-                  model.source = generatedCode;
-                }
+                // Append raw token to preserve formatting/newlines
+                generatedCode += data.token;
+                model.source = generatedCode;
               }
               
               if (data.done) {
@@ -104,14 +96,8 @@ export default function AIPromptPanel({ className, style, variant = 'default' }:
         }
       }
 
-      // Final cleanup of the generated code
-      let finalCode = generatedCode
-        .replace(/> EOF by user.*$/gm, '') // Remove "> EOF by user" lines
-        .replace(/^>.*$/gm, '') // Remove any lines starting with ">"
-        .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up multiple newlines
-        .trim(); // Remove leading/trailing whitespace
-      
-      // Update with final cleaned code
+      // Final code is the raw streamed text
+      const finalCode = generatedCode;
       model.source = finalCode;
       
       // Generate thumbnail for the cleaned code

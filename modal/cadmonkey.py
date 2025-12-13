@@ -57,7 +57,7 @@ def chat(item: dict):
     from llama_cpp import Llama
 
     message = item.get("message", "")
-    max_tokens = item.get("max_tokens") or 512
+    max_tokens = item.get("max_tokens") or None
     temperature = item.get("temperature", 0.7)
 
     if not message:
@@ -111,7 +111,7 @@ def chat_stream(item: dict):
     from llama_cpp import Llama
 
     message = item.get("message", "")
-    max_tokens = item.get("max_tokens") or 512
+    max_tokens = item.get("max_tokens") or None
     temperature = item.get("temperature", 0.7)
 
     if not message:
