@@ -6,6 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import { ModelDocument, ModelService, Comment } from '../services/firestore';
 import Mini3DViewer from './Mini3DViewer';
 import './Socials.css';
+import { Timestamp } from 'firebase/firestore';
 
 interface SocialsProps {
   onModelSelect?: (scadCode: string) => void;
@@ -13,13 +14,21 @@ interface SocialsProps {
 
 interface PostWithComments extends ModelDocument {
   comments: Comment[];
+  commentsLoaded: boolean;
   showComments: boolean;
   commentText: string;
+  renderStatus: 'queued' | 'validating' | 'rendering' | 'done' | 'invalid' | 'error';
 }
 
 const PAGE_SIZE = 10;
+const MIN_CREATED_AT = Timestamp.fromDate(new Date(Date.UTC(2025, 11, 13, 0, 0, 0)));
 
-// Validate SCAD code by attempting to render it
+function isPlaceholderThumbnailUrl(thumbnailUrl?: string): boolean {
+  if (!thumbnailUrl) return false;
+  // Previous versions saved fallback icons as base64 SVG data URLs.
+  return thumbnailUrl.startsWith('data:image/svg+xml');
+}
+
 async function validateScadCode(scadCode: string): Promise<boolean> {
   try {
     const { spawnOpenSCAD } = await import('../runner/openscad-runner');
@@ -37,16 +46,10 @@ async function validateScadCode(scadCode: string): Promise<boolean> {
         '--enable=lazy-union',
       ],
       outputPaths: ['validate.off'],
-    }, (streams) => {
-      // Silently validate
-    });
+    }, () => {});
 
     const result = await job;
-    
-    if (result.error) {
-      return false;
-    }
-    
+    if (result.error) return false;
     return !!result.outputs?.[0]?.[1];
   } catch (err) {
     console.error('SCAD validation error:', err);
@@ -65,6 +68,24 @@ export default function Socials({ onModelSelect }: SocialsProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<PostWithComments[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const queueRunningRef = useRef(false);
+  const renderWaitersRef = useRef(new Map<string, { resolve: () => void; reject: (err: unknown) => void }>());
+  const [activeRenderId, setActiveRenderId] = useState<string | null>(null);
+  const postsRef = useRef<PostWithComments[]>([]);
+  const loadingRef = useRef<boolean>(loading);
+  const hasMoreRef = useRef<boolean>(hasMore);
+
+  useEffect(() => {
+    postsRef.current = posts;
+  }, [posts]);
+
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
 
   useEffect(() => {
     loadPosts(true);
@@ -102,7 +123,7 @@ export default function Socials({ onModelSelect }: SocialsProps) {
       setError(null);
       console.log(`🔍 Performing server-side search for: "${query}"`);
 
-      const models = await ModelService.searchModels(query, 100); // Search top 100 recent models
+      const models = await ModelService.searchModels(query, 100, MIN_CREATED_AT); // Search top 100 recent models
 
       // Filter and validate models (same as loadPosts)
       const basicValidModels = models.filter(model =>
@@ -112,37 +133,16 @@ export default function Socials({ onModelSelect }: SocialsProps) {
         model.scadCode !== 'undefined'
       );
 
-      console.log(`🔍 Validating ${basicValidModels.length} search results for rendering...`);
-      const renderableModels = [];
-      for (const model of basicValidModels) {
-        const isValid = await validateScadCode(model.scadCode);
-        if (isValid) {
-          renderableModels.push(model);
-        }
-      }
-      console.log(`📊 Search returned ${renderableModels.length} valid models`);
-
-      const postsWithComments = renderableModels.map(model => ({
+      const postsWithComments = basicValidModels.map(model => ({
         ...model,
         comments: [],
-        showComments: true,
+        commentsLoaded: false,
+        showComments: false,
         commentText: ''
+        ,renderStatus: 'queued' as const
       }));
 
-      // Load comments
-      const postsWithCommentsData = await Promise.all(
-        postsWithComments.map(async (post) => {
-          try {
-            const comments = await ModelService.getComments(post.id);
-            return { ...post, comments };
-          } catch (err) {
-            console.error(`Error loading comments for ${post.id}:`, err);
-            return { ...post, comments: [] };
-          }
-        })
-      );
-
-      setSearchResults(postsWithCommentsData);
+      setSearchResults(postsWithComments);
     } catch (err) {
       console.error('Error performing search:', err);
       setError('Unable to search models right now.');
@@ -155,7 +155,7 @@ export default function Socials({ onModelSelect }: SocialsProps) {
     try {
       setLoading(true);
       setError(null);
-      const result = await ModelService.getModelsPaginated(reset ? null : lastDoc, PAGE_SIZE);
+      const result = await ModelService.getModelsPaginated(reset ? null : lastDoc, PAGE_SIZE, MIN_CREATED_AT);
       
       // First filter: basic SCAD code validation
       const basicValidModels = result.models.filter(model => 
@@ -165,44 +165,18 @@ export default function Socials({ onModelSelect }: SocialsProps) {
         model.scadCode !== 'undefined'
       );
       
-      // Second filter: actual render validation
-      console.log(`🔍 Validating ${basicValidModels.length} models for rendering...`);
-      const renderableModels = [];
-      for (const model of basicValidModels) {
-        const isValid = await validateScadCode(model.scadCode);
-        if (isValid) {
-          renderableModels.push(model);
-          console.log(`✅ Model ${model.id} validated successfully`);
-        } else {
-          console.log(`❌ Model ${model.id} failed validation (render error)`);
-        }
-      }
-      console.log(`📊 Showing ${renderableModels.length} valid models out of ${basicValidModels.length}`);
-      
-      const postsWithComments = renderableModels.map(model => ({
+      const postsWithComments = basicValidModels.map(model => ({
         ...model,
         comments: [],
-        showComments: true, // Always show comments by default
+        commentsLoaded: false,
+        showComments: false,
         commentText: ''
+        ,renderStatus: 'queued' as const
       }));
-      
-      // Load comments before setting posts
-      const postsWithCommentsData = await Promise.all(
-        postsWithComments.map(async (post) => {
-          try {
-            const comments = await ModelService.getComments(post.id);
-            console.log(`✅ Loaded ${comments.length} comments for post ${post.id}`);
-            return { ...post, comments };
-          } catch (err) {
-            console.error(`Error loading comments for ${post.id}:`, err);
-            return { ...post, comments: [] };
-          }
-        })
-      );
-      
-      setPosts(prev => reset ? postsWithCommentsData : [...prev, ...postsWithCommentsData]);
+
+      setPosts(prev => reset ? postsWithComments : [...prev, ...postsWithComments]);
       setLastDoc(result.lastDoc);
-      setHasMore(result.models.length === PAGE_SIZE && renderableModels.length > 0);
+      setHasMore(result.models.length === PAGE_SIZE);
     } catch (err) {
       console.error('Error loading posts:', err);
       setError('Unable to load posts right now.');
@@ -216,6 +190,94 @@ export default function Socials({ onModelSelect }: SocialsProps) {
       loadPosts();
     }
   };
+
+  // Sequentially validate + render (newest to oldest) without blocking initial load.
+  // Important: keep the worker loop alive; do NOT restart it on list length changes (that can orphan in-flight work).
+  useEffect(() => {
+    if (queueRunningRef.current) return;
+
+    let cancelled = false;
+    queueRunningRef.current = true;
+
+    const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
+    (async () => {
+      try {
+        while (!cancelled) {
+          if (loadingRef.current) {
+            await sleep(200);
+            continue;
+          }
+
+          const next = postsRef.current.find(p => p.renderStatus === 'queued');
+          if (!next) {
+            // If we have no more pages and nothing queued, we're done.
+            if (!hasMoreRef.current) break;
+            await sleep(300);
+            continue;
+          }
+
+          setPosts(prev => prev.map(p => p.id === next.id ? { ...p, renderStatus: 'validating' } : p));
+
+          // Retry once for transient FS errors from the worker.
+          let isValid = await validateScadCode(next.scadCode);
+          if (!isValid) {
+            await sleep(150);
+            isValid = await validateScadCode(next.scadCode);
+          }
+
+          if (cancelled) break;
+
+          // Post might have been removed/updated while we were validating.
+          if (!postsRef.current.some(p => p.id === next.id)) {
+            continue;
+          }
+
+          if (!isValid) {
+            // Filter out non-renderable models from the feed.
+            setPosts(prev => prev.filter(p => p.id !== next.id));
+            continue;
+          }
+
+          // If we already have a REAL thumbnail (not a placeholder), we consider it done.
+          if (next.thumbnailUrl && !isPlaceholderThumbnailUrl(next.thumbnailUrl)) {
+            setPosts(prev => prev.map(p => p.id === next.id ? { ...p, renderStatus: 'done' } : p));
+            continue;
+          }
+
+          // Render heavy preview for this item only.
+          setActiveRenderId(next.id);
+          setPosts(prev => prev.map(p => p.id === next.id ? { ...p, renderStatus: 'rendering' } : p));
+
+          const renderPromise = new Promise<void>((resolve, reject) => {
+            renderWaitersRef.current.set(next.id, { resolve, reject });
+          });
+
+          try {
+            await renderPromise;
+            if (cancelled) break;
+            setPosts(prev => prev.map(p => p.id === next.id ? { ...p, renderStatus: 'done' } : p));
+          } catch (err) {
+            if (cancelled) break;
+            // Filter out models that fail to render a preview.
+            setPosts(prev => prev.filter(p => p.id !== next.id));
+          } finally {
+            renderWaitersRef.current.delete(next.id);
+            setActiveRenderId(null);
+          }
+        }
+      } finally {
+        queueRunningRef.current = false;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      setActiveRenderId(null);
+      renderWaitersRef.current.clear();
+      queueRunningRef.current = false;
+    };
+  }, []);
 
   const handleLike = async (postId: string) => {
     try {
@@ -239,10 +301,26 @@ export default function Socials({ onModelSelect }: SocialsProps) {
     }
   };
 
-  const toggleComments = (postId: string) => {
-    setPosts(prev => prev.map(p => 
-      p.id === postId ? { ...p, showComments: !p.showComments } : p
+  const toggleComments = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    const willOpen = !post.showComments;
+    setPosts(prev => prev.map(p =>
+      p.id === postId ? { ...p, showComments: willOpen } : p
     ));
+
+    // Lazy-load comments only when opening for the first time
+    if (willOpen && !post.commentsLoaded) {
+      try {
+        const comments = await ModelService.getComments(postId);
+        setPosts(prev => prev.map(p =>
+          p.id === postId ? { ...p, comments, commentsLoaded: true } : p
+        ));
+      } catch (err) {
+        console.error(`Error loading comments for ${postId}:`, err);
+      }
+    }
   };
 
   const handleCommentChange = (postId: string, text: string) => {
@@ -366,7 +444,16 @@ export default function Socials({ onModelSelect }: SocialsProps) {
               <Mini3DViewer
                 scadCode={post.scadCode}
                 thumbnail={post.thumbnailUrl}
-                forceInteractive
+                enabled={post.id === activeRenderId && post.renderStatus === 'rendering'}
+                forceInteractive={post.id === activeRenderId && post.renderStatus === 'rendering'}
+                onRenderComplete={() => {
+                  const waiter = renderWaitersRef.current.get(post.id);
+                  waiter?.resolve();
+                }}
+                onRenderError={(err) => {
+                  const waiter = renderWaitersRef.current.get(post.id);
+                  waiter?.reject(err);
+                }}
               />
             </div>
 

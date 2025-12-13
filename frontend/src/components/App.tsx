@@ -1,6 +1,6 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { State, StatePersister } from '../state/app-state';
 import { Model } from '../state/model';
 import EditorPanel from './EditorPanel';
@@ -10,15 +10,33 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import AIPromptPanel from './AIPromptPanel';
 import Socials from './Socials';
 import { LandingPage } from './LandingPage';
+import ExportButton from './ExportButton';
 import './AppLayout.css';
 
 export function App({ initialState, statePersister, fs }: { initialState: State, statePersister: StatePersister, fs: FS }) {
   const [state, setState] = useState(initialState);
   const [currentView, setCurrentView] = useState<'workspace' | 'gallery' | 'initial'>('initial');
   const [autoRunPrompt, setAutoRunPrompt] = useState<string | null>(null);
+  const initCalledRef = useRef(false);
 
-  const model = new Model(fs, state, setState, statePersister);
-  useEffect(() => model.init());
+  // Create Model instance once and keep it stable across renders
+  const model = useMemo(() => {
+    const m = new Model(fs, initialState, setState, statePersister);
+    return m;
+  }, [fs, statePersister]);
+  
+  // Update model's state reference when state changes
+  useEffect(() => {
+    model.state = state;
+  }, [state, model]);
+
+  // Only call init once on mount, and only if there's no output
+  useEffect(() => {
+    if (!initCalledRef.current && !state.output) {
+      initCalledRef.current = true;
+      model.init();
+    }
+  }, [model, state.output]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,7 +63,7 @@ export function App({ initialState, statePersister, fs }: { initialState: State,
         <div className="app-shell">
           <header className="app-header">
             <div className="app-title">
-              <img src="/icon.png" alt="CADMonkey" className="app-logo" />
+              <span className="app-logo-text">cadmonkey</span>
             </div>
             <div className="app-view-toggle">
               <button
@@ -81,9 +99,6 @@ export function App({ initialState, statePersister, fs }: { initialState: State,
             {currentView === 'workspace' ? (
               <div className="workspace-card">
                 <section className={`editor-pane ${(state.rendering || state.previewing) ? 'processing' : ''}`}>
-                  <div className="pane-header">
-                    <div className="pane-title">OpenSCAD Editor</div>
-                  </div>
                   <div className="pane-body editor-surface">
                     <EditorPanel
                       className="minimal-editor"
@@ -100,13 +115,13 @@ export function App({ initialState, statePersister, fs }: { initialState: State,
                 </section>
 
                 <section className={`viewer-pane ${state.output && !state.rendering && !state.previewing ? 'completed' : ''}`}>
-                  <div className="pane-header">
-                    <div className="pane-title">3D Preview</div>
-                  </div>
                   <div className="pane-body viewer-surface">
                     <ViewerPanel
                       style={{ flex: 1 }}
                     />
+                    <div className="viewer-download-button">
+                      <ExportButton />
+                    </div>
                   </div>
                 </section>
               </div>

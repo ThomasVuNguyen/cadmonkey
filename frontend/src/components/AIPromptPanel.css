@@ -11,8 +11,102 @@
 .ai-prompt-panel.compact {
   padding: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Workspace Suggestions */
+.workspace-suggestions {
+  display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workspace-suggestion-tag {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workspace-suggestion-tag:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.workspace-suggestion-tag:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Workspace Input Wrapper */
+.workspace-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.workspace-input {
+  width: 100%;
+  padding: 10px 44px 10px 14px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 7px !important;
+  color: #ffffff !important;
+  font-size: 0.875rem !important;
+  font-family: inherit;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.workspace-input:focus {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.workspace-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.workspace-submit-button {
+  position: absolute;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #1e1e2e;
+  flex-shrink: 0;
+}
+
+.workspace-submit-button:hover:not(:disabled) {
+  background: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.workspace-submit-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.workspace-submit-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .ai-prompt-panel.default {

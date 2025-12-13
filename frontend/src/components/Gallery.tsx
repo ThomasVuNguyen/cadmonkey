@@ -6,6 +6,7 @@ import { Message } from 'primereact/message';
 import { ModelService, ModelDocument } from '../services/firestore';
 import { Model } from '../state/model';
 import Mini3DViewer from './Mini3DViewer';
+import { Timestamp } from 'firebase/firestore';
 
 interface GalleryProps {
   model: Model;
@@ -19,6 +20,7 @@ export default function Gallery({ model, onModelSelect }: GalleryProps) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [lastDoc, setLastDoc] = useState<any>(null);
+  const MIN_CREATED_AT = Timestamp.fromDate(new Date(Date.UTC(2025, 11, 13, 0, 0, 0)));
 
   // Load initial models
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function Gallery({ model, onModelSelect }: GalleryProps) {
       setLoading(true);
       setError(null);
 
-      const result = await ModelService.getModelsPaginated(lastDoc, 12);
+      const result = await ModelService.getModelsPaginated(lastDoc, 12, MIN_CREATED_AT);
 
       // Log detailed info about loaded models
       console.log('📊 [GALLERY] Loaded', result.models.length, 'models');

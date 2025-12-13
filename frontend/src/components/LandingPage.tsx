@@ -1,27 +1,26 @@
 
 import React, { useState } from 'react';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
 import './LandingPage.css';
 
 interface LandingPageProps {
   onStart: (prompt: string) => void;
 }
 
+const SUGGESTIONS = ['a teddy bear', 'a cute box'];
+
 export function LandingPage({ onStart }: LandingPageProps) {
   const [prompt, setPrompt] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleStart = () => {
-    if (!prompt.trim()) return;
-    setIsLoading(true);
-    // Add a small delay for effect or immediate transition
-    onStart(prompt);
+  const handleStart = (promptToUse?: string) => {
+    const finalPrompt = promptToUse || prompt;
+    if (!finalPrompt.trim()) return;
+    onStart(finalPrompt);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent newline in textarea
+      e.preventDefault();
       handleStart();
     }
   };
@@ -29,34 +28,40 @@ export function LandingPage({ onStart }: LandingPageProps) {
   return (
     <div className="landing-page">
       <div className="landing-content">
-        <div className="landing-header">
-          <img src="/icon.png" alt="CADMonkey" className="landing-logo" />
-          <h1 className="landing-title">What do you want to make today?</h1>
-          <p className="landing-subtitle">Describe a 3D object and let AI build it for you.</p>
-        </div>
-
-        <div className="landing-input-container">
-          <InputTextarea 
+        <h1 className="landing-title">Write an object name</h1>
+        
+        <div className="landing-input-wrapper">
+          <InputText 
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="e.g. A futuristic city with tall skyscrapers..."
+            placeholder="a cat"
             autoFocus
-            rows={3}
-            className="landing-textarea"
+            className="landing-input"
           />
-          <Button 
-            label={isLoading ? "Starting..." : "Make it"} 
-            onClick={handleStart}
-            disabled={!prompt.trim() || isLoading}
-            className="landing-button"
-            icon="pi pi-sparkles"
-          />
+          <button
+            onClick={() => handleStart()}
+            disabled={!prompt.trim()}
+            className="landing-submit-button"
+            aria-label="Submit"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 17L10 3M10 3L3 10M10 3L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
-      </div>
-      
-      <div className="landing-footer">
-        Powered by CADMonkey AI &bull; v1.21
+
+        <div className="landing-suggestions">
+          {SUGGESTIONS.map((suggestion) => (
+            <button
+              key={suggestion}
+              onClick={() => handleStart(suggestion)}
+              className="landing-suggestion-button"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

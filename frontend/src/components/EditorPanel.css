@@ -4,10 +4,18 @@
 .monaco-editor-container {
   border-radius: 0;
   overflow: hidden;
-  background: transparent;
+  background: #1e1e2e;
   box-shadow: none;
   height: 100%;
   width: 100%;
+}
+
+/* Force Monaco to truly render as dark (prevents washed-out look) */
+.monaco-editor,
+.monaco-editor-background,
+.monaco-editor .margin,
+.monaco-editor .monaco-scrollable-element {
+  background-color: #1e1e2e !important;
 }
 
 /* Editor Loading State */

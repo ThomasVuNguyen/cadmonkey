@@ -138,22 +138,22 @@ export class ModelService {
   }
 
   // Get models with pagination
-  static async getModelsPaginated(lastDoc?: any, limitCount: number = 20): Promise<{models: ModelDocument[], lastDoc: any}> {
+  static async getModelsPaginated(
+    lastDoc?: any,
+    limitCount: number = 20,
+    minCreatedAt?: Timestamp,
+  ): Promise<{models: ModelDocument[], lastDoc: any}> {
     try {
-      let q = query(
-        this.collection,
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
-      );
-
-      if (lastDoc) {
-        q = query(
-          this.collection,
-          orderBy('createdAt', 'desc'),
-          startAfter(lastDoc),
-          limit(limitCount)
-        );
+      const parts: any[] = [orderBy('createdAt', 'desc')];
+      if (minCreatedAt) {
+        parts.unshift(where('createdAt', '>=', minCreatedAt));
       }
+      if (lastDoc) {
+        parts.push(startAfter(lastDoc));
+      }
+      parts.push(limit(limitCount));
+
+      const q = query(this.collection, ...parts);
 
       const querySnapshot = await getDocs(q);
       const models = querySnapshot.docs.map(doc => ({
@@ -176,7 +176,7 @@ export class ModelService {
   // Search models by prompt text (server-side)
   // Note: Firestore doesn't support full-text search natively, so we fetch all and filter
   // For production with large datasets, consider using Algolia or similar
-  static async searchModels(searchQuery: string, limitCount: number = 50): Promise<ModelDocument[]> {
+  static async searchModels(searchQuery: string, limitCount: number = 50, minCreatedAt?: Timestamp): Promise<ModelDocument[]> {
     try {
       if (!searchQuery || searchQuery.trim() === '') {
         return [];
@@ -185,11 +185,12 @@ export class ModelService {
       const searchLower = searchQuery.toLowerCase().trim();
 
       // Fetch a large batch of recent models
-      const q = query(
-        this.collection,
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
-      );
+      const parts: any[] = [orderBy('createdAt', 'desc')];
+      if (minCreatedAt) {
+        parts.unshift(where('createdAt', '>=', minCreatedAt));
+      }
+      parts.push(limit(limitCount));
+      const q = query(this.collection, ...parts);
 
       const querySnapshot = await getDocs(q);
       const allModels = querySnapshot.docs.map(doc => ({

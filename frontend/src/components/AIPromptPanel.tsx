@@ -1,9 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
-import { Card } from 'primereact/card';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Message } from 'primereact/message';
+import { InputText } from 'primereact/inputtext';
 import { ModelContext } from './contexts';
 import { ModelService } from '../services/firestore';
 import './AIPromptPanel.css';
@@ -15,6 +11,8 @@ interface AIPromptPanelProps {
   variant?: 'default' | 'compact';
   initialPrompt?: string | null;
 }
+
+const WORKSPACE_SUGGESTIONS = ['a cat', 'planet earth'];
 
 export default function AIPromptPanel({ className, style, variant = 'default', initialPrompt }: AIPromptPanelProps) {
   const model = useContext(ModelContext);
@@ -150,27 +148,38 @@ export default function AIPromptPanel({ className, style, variant = 'default', i
   if (variant === 'compact') {
     return (
       <div className={`ai-prompt-panel compact ${className ?? ''}`} style={style}>
-        <div className="prompt-input-container">
-          <InputTextarea
+        <div className="workspace-suggestions">
+          {WORKSPACE_SUGGESTIONS.map((suggestion) => (
+            <button
+              key={suggestion}
+              onClick={() => handleGenerate(suggestion)}
+              className="workspace-suggestion-tag"
+              disabled={isLoading}
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+        <div className="workspace-input-wrapper">
+          <InputText
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="a cube"
+            placeholder=""
             disabled={isLoading}
             onKeyPress={handleKeyPress}
-            rows={2}
-            className="p-inputtextarea"
+            className="workspace-input"
           />
+          <button
+            onClick={() => handleGenerate()}
+            disabled={!prompt.trim() || isLoading}
+            className="workspace-submit-button"
+            aria-label="Submit"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 17L10 3M10 3L3 10M10 3L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
-
-
-        <Button
-          label={isLoading ? "Making..." : "Make"}
-          icon=""
-          onClick={() => handleGenerate()}
-          disabled={!prompt.trim() || isLoading}
-          className={`generate-button ${isLoading ? 'loading' : ''}`}
-        />
-
         {error && (
           <div className="prompt-error">
             {error}
@@ -194,27 +203,25 @@ export default function AIPromptPanel({ className, style, variant = 'default', i
 
       {/* Input Section */}
       <div className="prompt-input-container">
-        <InputTextarea
+        <InputText
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe your 3D object..."
           disabled={isLoading}
           onKeyPress={handleKeyPress}
-          rows={3}
-          className="p-inputtextarea"
+          className="workspace-input"
         />
       </div>
 
       {/* Generate Button */}
       <div className="prompt-actions">
-        <Button
-          label={isLoading ? "Making..." : "Make"}
-          icon=""
+        <button
           onClick={() => handleGenerate()}
           disabled={!prompt.trim() || isLoading}
           className={`generate-button ${isLoading ? 'loading' : ''}`}
-        />
-
+        >
+          {isLoading ? "Making..." : "Make"}
+        </button>
       </div>
 
       {/* Error Message */}

@@ -158,42 +158,6 @@ export default function ViewerPanel({className, style}: {className?: string, sty
       >
         <span slot="progress-bar"></span>
       </model-viewer>
-
-      {/* Download STL Button - Bottom Right */}
-      <div style={{
-        position: 'absolute',
-        bottom: '16px',
-        right: '16px',
-        zIndex: 10
-      }}>
-        <button
-          onClick={() => model.export()}
-          style={{
-            background: '#1a1a1a',
-            border: 'none',
-            borderRadius: '6px',
-            color: '#ffffff',
-            padding: '10px 20px',
-            fontSize: '14px',
-            fontWeight: '700',
-            fontFamily: "'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: 'none',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#000000';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#1a1a1a';
-          }}
-        >
-          <span>Download STL</span>
-        </button>
-      </div>
     </div>
   )
 }

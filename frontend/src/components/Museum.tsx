@@ -5,6 +5,7 @@ import { Message } from 'primereact/message';
 import { ModelDocument, ModelService } from '../services/firestore';
 import Mini3DViewer from './Mini3DViewer';
 import './Museum.css';
+import { Timestamp } from 'firebase/firestore';
 
 interface MuseumProps {
   onModelSelect?: (scadCode: string) => void;
@@ -13,6 +14,7 @@ interface MuseumProps {
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 100;
 const ROTATION_FACTOR = 0.1;
+const MIN_CREATED_AT = Timestamp.fromDate(new Date(Date.UTC(2025, 11, 13, 0, 0, 0)));
 
 interface SwipeCardProps {
   model: ModelDocument;
@@ -166,7 +168,7 @@ export default function Museum({ onModelSelect }: MuseumProps) {
     try {
       setLoading(true);
       setError(null);
-      const result = await ModelService.getModelsPaginated(reset ? null : lastDoc, PAGE_SIZE);
+      const result = await ModelService.getModelsPaginated(reset ? null : lastDoc, PAGE_SIZE, MIN_CREATED_AT);
       setModels(prev => reset ? result.models : [...prev, ...result.models]);
       setLastDoc(result.lastDoc);
       setHasMore(result.models.length === PAGE_SIZE);
