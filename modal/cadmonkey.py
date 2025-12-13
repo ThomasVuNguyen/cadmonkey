@@ -9,14 +9,22 @@ import modal
 
 app = modal.App("cadmonkey-chat")
 
-# Build image with llama.cpp and bake the model into the image
+# Build image with llama-cpp-python (CUDA wheels) and bake the model into the image
 image = (
-    modal.Image.debian_slim()
-    .apt_install("git", "build-essential", "cmake", "wget", "libcurl4-openssl-dev")
-    .pip_install("fastapi")
+    modal.Image.from_registry("nvidia/cuda:12.4.1-devel-ubuntu22.04")
+    .apt_install(
+        "wget",
+        "python3",
+        "python3-pip",
+        "python-is-python3",  # provide /usr/bin/python for pip_install
+    )
+    # Install FastAPI and llama-cpp-python CUDA wheel (CU124 index)
+    .pip_install(
+        "fastapi",
+        "llama-cpp-python",
+        extra_index_url="https://abetlen.github.io/llama-cpp-python/whl/cu124",
+    )
     .run_commands(
-        "git clone https://github.com/ggerganov/llama.cpp /llama-cpp",
-        "cd /llama-cpp && cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF && cmake --build build --config Release -j$(nproc)",
         "mkdir -p /opt/models",
         "wget -O /opt/models/cadmonkey-1b.gguf https://huggingface.co/ThomasTheMaker/cadmonkey-1b-data-32-gguf/resolve/main/cadmonkey-1b-data-32-q8_0.gguf",
     )
@@ -26,8 +34,8 @@ image = (
 # Chat completion endpoint
 @app.function(
     image=image,
-    cpu=8.0,  # 8 vCPUs - back to CPU since GPU setup is complex
-    memory=4096,  # 4GB RAM - increased for better performance
+    gpu="t4",  # NVIDIA T4 GPU
+    memory=8192,  # 8GB RAM
     timeout=300,  # 5 minutes timeout
     min_containers=0,  # Scale to zero when idle (saves money)
 )
@@ -44,7 +52,9 @@ def chat(item: dict):
     }
     """
     import json
-    import subprocess
+    import os
+
+    from llama_cpp import Llama
 
     message = item.get("message", "")
     max_tokens = item.get("max_tokens") or 512
@@ -53,73 +63,41 @@ def chat(item: dict):
     if not message:
         return {"error": "No message provided"}
 
-    # Build prompt
-    prompt = f"User: {message}\nAssistant:"
-
-    # Run llama.cpp
-    try:
-        result = subprocess.run(
-            [
-                "/llama-cpp/build/bin/llama-cli",
-                "-m",
-                "/opt/models/cadmonkey-1b.gguf",
-                "-p",
-                prompt,
-                "-n",
-                str(max_tokens),
-                "--temp",
-                str(temperature),
-                "--no-display-prompt",
-                "--simple-io",
-                "--single-turn",
-            ],
-            capture_output=True,
-            stdin=subprocess.DEVNULL,  # Match `</dev/null` to avoid interactive waits
-            text=True,
-            timeout=280,  # 4 minutes 40 seconds (leaving buffer for processing)
+    # Lazy-load model for the container
+    global _llama_model
+    if "_llama_model" not in globals():
+        _llama_model = Llama(
+            model_path="/opt/models/cadmonkey-1b.gguf",
+            n_gpu_layers=-1,  # offload all layers to GPU
+            n_ctx=2048,
+            verbose=False,
         )
 
-        # Parse output
-        raw_output = result.stdout.strip()
-
-        # Drop llama.cpp diagnostics (memory tables, exit notices)
-        filtered_lines = []
-        for line in raw_output.splitlines():
-            if "llama_memory_breakdown_print" in line:
-                continue
-            if "unaccounted" in line and "memory" in line:
-                continue
-            if "Exiting" in line:
-                continue
-            filtered_lines.append(line)
-        output = "\n".join(filtered_lines).strip()
-
-        # Clean up the response
-        if "Assistant:" in output:
-            response = output.split("Assistant:")[-1].strip()
-        else:
-            response = output
-
-        return {"response": response, "message": message}
-
-    except subprocess.TimeoutExpired:
-        return {"error": "Request timeout"}
+    try:
+        result = _llama_model.create_completion(
+            prompt=f"User: {message}\nAssistant:",
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stop=["User:"],
+        )
+        text = result["choices"][0]["text"].strip()
+        return {"response": text, "message": message}
     except Exception as e:
         return {"error": str(e)}
 
 
-# Streaming chat endpoint (CPU-only)
+# Streaming chat endpoint that forwards raw chunks
 @app.function(
     image=image,
-    cpu=8.0,  # 8 vCPUs - CPU-only configuration
-    memory=4096,  # 4GB RAM
-    timeout=300,  # 5 minutes timeout
-    min_containers=0,  # Scale to zero when idle (saves money)
+    gpu="t4",
+    memory=8192,
+    timeout=300,
+    min_containers=0,
 )
 @modal.fastapi_endpoint(method="POST")
 def chat_stream(item: dict):
     """
-    Streaming chat endpoint - returns Server-Sent Events (CPU-only)
+    Streaming chat endpoint - Server-Sent Events (raw formatting preserved)
 
     POST with JSON:
     {
@@ -129,12 +107,8 @@ def chat_stream(item: dict):
     }
     """
     import json
-    import os
-    import select
-    import subprocess
-    import time
-
     from fastapi.responses import StreamingResponse
+    from llama_cpp import Llama
 
     message = item.get("message", "")
     max_tokens = item.get("max_tokens") or 512
@@ -143,108 +117,31 @@ def chat_stream(item: dict):
     if not message:
         return {"error": "No message provided"}
 
-    # Build prompt
     prompt = f"User: {message}\nAssistant:"
 
     def generate_stream():
         try:
-            # Run llama.cpp with streaming output (CPU-only)
-            process = subprocess.Popen(
-                [
-                    "/llama-cpp/build/bin/llama-cli",
-                    "-m",
-                    "/opt/models/cadmonkey-1b.gguf",
-                    "-p",
-                    prompt,
-                    "-n",
-                    str(max_tokens),
-                    "--temp",
-                    str(temperature),
-                    "--no-display-prompt",
-                    "--simple-io",
-                    "--single-turn",
-                ],
-                stdout=subprocess.PIPE,
-                stdin=subprocess.DEVNULL,  # No stdin so the process can't wait for input
-                stderr=subprocess.STDOUT,  # Merge stderr so it can't block the pipe
-                text=False,  # Binary to allow non-blocking read
-                bufsize=0,  # Unbuffered
-            )
+            global _llama_model
+            if "_llama_model" not in globals():
+                _llama_model = Llama(
+                    model_path="/opt/models/cadmonkey-1b.gguf",
+                    n_gpu_layers=-1,
+                    n_ctx=2048,
+                    verbose=False,
+                )
 
-            # Read small chunks to avoid waiting for newlines, with idle timeout
-            buffer = ""
-            token_count = 0
-            start_time = time.time()
-            last_data_time = time.time()
-            idle_timeout = 5  # seconds without tokens before we bail
-            wall_timeout = 120  # hard cap to prevent runaway
-
-            while True:
-                # Hard wall timeout
-                if time.time() - start_time > wall_timeout:
-                    process.kill()
-                    yield f"data: {json.dumps({'error': 'Generation exceeded wall timeout'})}\n\n"
-                    return
-
-                ready, _, _ = select.select([process.stdout], [], [], 1.0)
-
-                if ready:
-                    reader = getattr(process.stdout, "read1", None)
-                    if reader is not None:
-                        raw = reader(1024)
-                    else:
-                        raw = os.read(process.stdout.fileno(), 1024)
-                    if raw == b"":
-                        break  # EOF
-                    last_data_time = time.time()
-                    chunk = raw.decode("utf-8", errors="ignore")
-                    buffer += chunk
-                    while "\n" in buffer:
-                        line, buffer = buffer.split("\n", 1)
-                        if not line.strip():
-                            continue
-                        cleaned_line = line.strip()
-                        if cleaned_line.startswith("Assistant:"):
-                            cleaned_line = cleaned_line.replace(
-                                "Assistant:", ""
-                            ).strip()
-                        if "llama_memory_breakdown_print" in cleaned_line:
-                            continue
-                        if "Exiting" in cleaned_line:
-                            continue
-                        if cleaned_line and not cleaned_line.startswith("User:"):
-                            yield f"data: {json.dumps({'token': cleaned_line})}\n\n"
-                            token_count += 1
-                            if token_count >= max_tokens:
-                                process.kill()
-                                yield f"data: {json.dumps({'done': True})}\n\n"
-                                return
-                else:
-                    # No data this tick; check for exit or idle stall
-                    if process.poll() is not None:
-                        break
-                    if time.time() - last_data_time > idle_timeout:
-                        process.kill()
-                        yield f"data: {json.dumps({'error': 'Generation stalled (idle timeout)'})}\n\n"
-                        return
-
-            try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                yield f"data: {json.dumps({'error': 'Generation process hung and was terminated'})}\n\n"
-                return
-
-            # Flush any trailing buffer content after process exit
-            if buffer.strip():
-                cleaned_line = buffer.strip()
-                if cleaned_line.startswith("Assistant:"):
-                    cleaned_line = cleaned_line.replace("Assistant:", "").strip()
-                if cleaned_line and not cleaned_line.startswith("User:"):
-                    yield f"data: {json.dumps({'token': cleaned_line})}\n\n"
+            for chunk in _llama_model.create_completion(
+                prompt=prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stop=["User:"],
+                stream=True,
+            ):
+                text = chunk["choices"][0].get("text", "")
+                # forward raw chunk (may include newlines/spaces)
+                yield f"data: {json.dumps({'token': text})}\n\n"
 
             yield f"data: {json.dumps({'done': True})}\n\n"
-
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
@@ -301,6 +198,7 @@ DEPLOYMENT INSTRUCTIONS
 
 2. Authenticate:
    modal setup
+   modal app delete cadmonkey-chat
 
 3. Model is baked into the image at build time (no separate upload step).
 

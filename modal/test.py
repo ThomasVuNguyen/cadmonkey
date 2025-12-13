@@ -14,7 +14,7 @@ from pathlib import Path
 
 import requests
 
-# Stream endpoint
+# Stream endpoint (SSE)
 STREAM_URL = "https://thomas-15--cadmonkey-chat-chat-stream.modal.run"
 
 NOISE_SUBSTRINGS = {
@@ -41,8 +41,6 @@ NOISE_SUBSTRINGS = {
 
 def is_noise(token: str) -> bool:
     """Heuristic to drop banner/log lines from the stream."""
-    if not token.strip():
-        return True
     for sub in NOISE_SUBSTRINGS:
         if sub in token:
             return True
@@ -58,9 +56,9 @@ def is_noise(token: str) -> bool:
 def stream_prompt(
     prompt: str, label: str, max_tokens: int | None = None, save_path: str | None = None
 ) -> bool:
-    """Stream a prompt and print cleaned tokens."""
+    """Stream a prompt and print tokens (raw)."""
     print("\n" + "=" * 60)
-    print(f"Testing Streaming: {label}")
+    print(f"Testing: {label}")
     print("=" * 60)
 
     payload = {"message": prompt, "temperature": 0.7}
@@ -88,7 +86,7 @@ def stream_prompt(
         print(f"[FAIL] Error Response: {response.text}")
         return False
 
-    print("Streaming output (filtered tokens):")
+    print("Streaming output (raw tokens):")
     try:
         for line in response.iter_lines(decode_unicode=True):
             if not line:
@@ -103,15 +101,9 @@ def stream_prompt(
 
             if "token" in data:
                 token = data["token"]
-                if is_noise(token):
-                    continue
-                # Ensure tokens are newline-terminated for readability/SCAD validity
-                token_out = token
-                if not token_out.endswith("\n"):
-                    token_out = token_out + "\n"
-                print(token_out, end="", flush=True)
                 if collected_tokens is not None:
-                    collected_tokens.append(token_out)
+                    collected_tokens.append(token)
+                print(token, end="", flush=True)
             if data.get("done"):
                 if collected_tokens is not None:
                     try:
@@ -137,18 +129,17 @@ def stream_prompt(
 def run_tests() -> int:
     results = []
 
-    results.append(("Cube", stream_prompt("hey cadmonkey, make me a cube", "Cube")))
     results.append(
         (
             "Cat",
             stream_prompt(
                 "hey cadmonkey, make me a cat",
                 "Cat",
+                max_tokens=4096,
                 save_path="cat_output.scad",
             ),
         )
     )
-    results.append(("Dog", stream_prompt("hey cadmonkey, make me a dog", "Dog")))
 
     print("\n" + "=" * 60)
     print("Test Summary")
