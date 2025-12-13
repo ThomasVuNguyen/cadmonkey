@@ -1,0 +1,115 @@
+/* Responsive Design Test Utilities */
+/* This file contains utility classes for testing responsive design */
+
+/* Breakpoint indicators (for development only) */
+@media (max-width: 1200px) {
+  .app-shell::after {
+    content: 'Desktop Large';
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(58, 55, 250, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9999;
+    font-family: monospace;
+  }
+}
+
+@media (max-width: 992px) {
+  .app-shell::after {
+    content: 'Desktop';
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell::after {
+    content: 'Tablet';
+  }
+}
+
+@media (max-width: 576px) {
+  .app-shell::after {
+    content: 'Mobile';
+  }
+}
+
+/* Responsive grid test */
+.responsive-test-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.responsive-test-item {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  font-weight: 500;
+}
+
+/* Touch-friendly button sizes */
+@media (max-width: 768px) {
+  .toggle-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .generate-button {
+    min-height: 44px;
+  }
+  
+  .museum-card-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --primary-blue: #0000FF;
+    --gray-800: #000000;
+    --gray-600: #333333;
+    --white: #FFFFFF;
+  }
+  
+  .app-shell {
+    background: #FFFFFF;
+  }
+  
+  .workspace-card {
+    border: 2px solid #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .museum-card {
+    animation: none;
+  }
+  
+  .ai-prompt-panel {
+    animation: none;
+  }
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+  /* Dark mode styles would go here */
+  /* Currently the app uses a light theme with blue gradients */
+}

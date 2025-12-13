@@ -1,0 +1,267 @@
+/* Clean AI Prompt Panel Styles */
+.ai-prompt-panel {
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  transition: all 0.2s ease;
+}
+
+.ai-prompt-panel.compact {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-prompt-panel.default {
+  padding: 0;
+}
+
+/* Prompt Input Area */
+.prompt-input-container {
+  position: relative;
+  flex: 1;
+}
+
+.prompt-input-container .p-inputtextarea {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: #1f2937;
+  transition: all 0.2s ease;
+  box-shadow: none;
+  resize: none;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.prompt-input-container .p-inputtextarea:focus {
+  border-color: #4040FF;
+  box-shadow: 0 0 0 3px rgba(64, 64, 255, 0.1);
+  outline: none;
+}
+
+.prompt-input-container .p-inputtextarea::placeholder {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+/* Generate Button */
+.generate-button {
+  width: auto;
+  min-width: 80px;
+  height: 40px;
+  background: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Marlin Soft SQ', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.generate-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.generate-button:hover {
+  background: #000000;
+  box-shadow: none;
+}
+
+.generate-button:hover::before {
+  left: 100%;
+}
+
+.generate-button:active {
+  background: #000000;
+}
+
+.generate-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #9CA3AF;
+}
+
+/* Loading State */
+.generate-button.loading {
+  position: relative;
+  color: transparent;
+}
+
+.generate-button.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--white);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Progress Spinner */
+.prompt-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.prompt-progress .p-progressspinner {
+  margin-right: 8px;
+}
+
+/* Error Message */
+.prompt-error {
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* Success Message */
+.prompt-success {
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* Compact Variant Adjustments */
+.ai-prompt-panel.compact .prompt-input-container {
+  margin-bottom: 0;
+}
+
+.ai-prompt-panel.compact .prompt-input-container .p-inputtextarea {
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  font-size: 14px;
+}
+
+.ai-prompt-panel.compact .generate-button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ai-prompt-panel {
+    padding: 8px;
+  }
+  
+  .prompt-input-container .p-inputtextarea {
+    min-height: 50px;
+    font-size: 13px;
+  }
+  
+  .generate-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Focus States for Accessibility */
+.generate-button:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+.prompt-input-container .p-inputtextarea:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Header Styles */
+.prompt-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  color: var(--gray-700);
+}
+
+.prompt-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-sm);
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.prompt-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+/* Actions Container */
+.prompt-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-top: var(--space-md);
+}
+
+/* Animation for panel appearance */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-prompt-panel {
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
