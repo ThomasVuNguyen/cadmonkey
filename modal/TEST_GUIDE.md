@@ -1,4 +1,4 @@
-# K-1B Chat Endpoint Testing Guide
+# Cadmonkey Chat Endpoint Testing Guide
 
 ## Prerequisites
 
@@ -6,7 +6,7 @@ Before testing, make sure you have:
 
 1. **Uploaded your model** to Modal:
    ```bash
-   modal run k1.py::upload_model --local-path /path/to/your/k-1b.gguf
+   modal run cadmonkey.py::upload_model --local-path /path/to/your/cadmonkey-1b.gguf
    ```
 
 2. **Python requests library** installed:
@@ -45,21 +45,21 @@ Type your messages and get responses in real-time. Type `quit` or press Ctrl+C t
 ### Test Health Endpoint
 
 ```bash
-curl https://thomas-15--k-1b-chat-health.modal.run
+curl https://thomas-15--cadmonkey-chat-health-dev.modal.run
 ```
 
 Expected response:
 ```json
 {
   "status": "healthy",
-  "model": "k-1b"
+  "model": "cadmonkey"
 }
 ```
 
 ### Test Chat Endpoint
 
 ```bash
-curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
+curl -X POST https://thomas-15--cadmonkey-chat-chat-dev.modal.run \
   -H "Content-Type: application/json" \
   -d '{
     "message": "hey cadmonkey, make me a box",
@@ -80,22 +80,22 @@ Expected response:
 
 ```bash
 # Create a sphere
-curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
+curl -X POST https://thomas-15--cadmonkey-chat-chat-dev.modal.run \
   -H "Content-Type: application/json" \
   -d '{"message": "hey cadmonkey, make me a sphere", "max_tokens": 100}'
 
 # Create a cylinder
-curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
+curl -X POST https://thomas-15--cadmonkey-chat-chat-dev.modal.run \
   -H "Content-Type: application/json" \
   -d '{"message": "hey cadmonkey, make me a cylinder", "max_tokens": 100}'
 
 # Create a cone
-curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
+curl -X POST https://thomas-15--cadmonkey-chat-chat-dev.modal.run \
   -H "Content-Type: application/json" \
   -d '{"message": "hey cadmonkey, make me a cone", "max_tokens": 100}'
 
 # Create a torus
-curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
+curl -X POST https://thomas-15--cadmonkey-chat-chat-dev.modal.run \
   -H "Content-Type: application/json" \
   -d '{"message": "hey cadmonkey, make me a torus", "max_tokens": 100}'
 ```
@@ -106,7 +106,7 @@ curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
 
 ```javascript
 async function generateCAD(prompt) {
-  const response = await fetch('https://thomas-15--k-1b-chat-chat.modal.run', {
+  const response = await fetch('https://thomas-15--cadmonkey-chat-chat-dev.modal.run', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -165,15 +165,15 @@ generateCAD('hey cadmonkey, make me a torus');
 1. **Connection Timeout**
    - The model might be cold-starting (first request after idle)
    - Wait 30-60 seconds and try again
-   - Check if the model was uploaded: `modal volume ls k-1b-model`
+   - Check if the model was uploaded: `modal volume ls cadmonkey-model`
 
 2. **404 Not Found**
    - Verify the endpoint URLs match your deployment
    - Check deployment status: `modal app list`
 
 3. **500 Internal Server Error**
-   - Check if model file exists: `/models/k-1b.gguf`
-   - View logs: `modal app logs k-1b-chat`
+   - Check if model file exists: `/models/cadmonkey-1b.gguf`
+   - View logs: `modal app logs cadmonkey-chat`
 
 4. **Empty Response**
    - Increase `max_tokens` parameter
@@ -184,10 +184,10 @@ generateCAD('hey cadmonkey, make me a torus');
 
 ```bash
 # View real-time logs
-modal app logs k-1b-chat --follow
+modal app logs cadmonkey-chat --follow
 
 # View recent logs
-modal app logs k-1b-chat
+modal app logs cadmonkey-chat
 ```
 
 ### Check Deployment Status
@@ -197,13 +197,13 @@ modal app logs k-1b-chat
 modal app list
 
 # Check specific app
-modal app show k-1b-chat
+modal app show cadmonkey-chat
 ```
 
 ## Performance Tips
 
 1. **Cold Start**: First request may take 30-60 seconds
-2. **Keep Warm**: Set `min_containers=1` in k1.py to keep container ready (costs more)
+2. **Keep Warm**: Set `min_containers=1` in cadmonkey.py to keep container ready (costs more)
 3. **Token Limit**: Lower `max_tokens` for faster responses
 4. **Temperature**: Lower temperature (0.1-0.5) for more deterministic outputs
 
@@ -215,7 +215,7 @@ modal profile usage
 ```
 
 View detailed metrics:
-- Visit: https://modal.com/thomas-15/main/deployed/k-1b-chat
+- Visit: https://modal.com/thomas-15/main/deployed/cadmonkey-chat
 - Click on "Metrics" tab
 
 ## Next Steps

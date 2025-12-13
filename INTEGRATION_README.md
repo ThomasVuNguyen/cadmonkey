@@ -23,8 +23,8 @@ This project integrates the Modal backend with the Firebase frontend to create a
 
 ## Backend Details
 
-- **URL**: `https://thomas-15--k-1b-chat-chat.modal.run`
-- **Model**: K-1B (1 billion parameter model)
+- **URL**: `https://thomas-15--cadmonkey-chat-chat-dev.modal.run`
+- **Model**: Cadmonkey-1B (1 billion parameter model)
 - **API**: REST endpoint accepting JSON with message, max_tokens, and temperature
 - **Response**: Returns OpenSCAD code in the `response` field
 
@@ -80,7 +80,7 @@ A test page is available at `/root/cadmonkey/test_integration.html` that:
 The backend can be tested directly:
 
 ```bash
-curl -X POST https://thomas-15--k-1b-chat-chat.modal.run \
+curl -X POST https://thomas-15--cadmonkey-chat-chat-dev.modal.run \
   -H "Content-Type: application/json" \
   -d '{"message": "hey cadmonkey, make me a cube", "max_tokens": 100, "temperature": 0.7}'
 ```

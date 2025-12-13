@@ -24,8 +24,8 @@ export default function AIPromptPanel({ className, style, variant = 'default' }:
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Backend URLs
-  const BACKEND_URL = 'https://thomas-15--k-1b-chat-chat.modal.run';
-  const STREAM_URL = 'https://thomas-15--k-1b-chat-chat-stream.modal.run';
+  const BACKEND_URL = 'https://thomas-15--cadmonkey-chat-chat-dev.modal.run';
+  const STREAM_URL = 'https://thomas-15--cadmonkey-chat-chat-stream-dev.modal.run';
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
