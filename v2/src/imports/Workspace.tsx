@@ -1,5 +1,5 @@
 import svgPaths from "./svg-227mre0lzr";
-import imgLovableIconBgLightRemovebgPreview1 from "figma:asset/f34f4e53c1ee197ce2bdf05234bc70a842167409.png";
+import cadmonkeyLogo from "../assets/cadmonkey.png";
 import Gallery from "../components/Gallery";
 import { ModelService } from "../services/firestore";
 import { spawnOpenSCAD } from "../lib/runner/openscad-runner";
@@ -9,10 +9,8 @@ const APP_VERSION = `v${packageJson.version}`;
 
 function LovableLogo() {
   return (
-    <div className="relative shrink-0 size-[36px]" data-name="lovable logo">
-      <div className="absolute left-1/2 size-[36px] top-1/2 translate-x-[-50%] translate-y-[-50%]" data-name="lovable-icon-bg-light-removebg-preview 1">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={imgLovableIconBgLightRemovebgPreview1} />
-      </div>
+    <div className="relative shrink-0 size-[36px] flex items-center justify-center" data-name="lovable logo">
+      <img alt="CadMonkey Logo" className="max-w-full max-h-full object-contain pointer-events-none" src={cadmonkeyLogo} />
     </div>
   );
 }
@@ -20,7 +18,7 @@ function LovableLogo() {
 function Frame4() {
   return (
     <div className="basis-0 content-stretch flex flex-col gap-[2px] grow items-start min-h-px min-w-px relative shrink-0">
-      <div className="flex flex-col font-['Inter:Medium',sans-serif] font-medium justify-center leading-[0] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[#1c1c1c] text-[16px] text-nowrap w-full">
+      <div className="flex flex-col font-['Inter:Medium',sans-serif] font-medium justify-center leading-[0] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[#212121] text-[16px] text-nowrap w-full">
         <p className="leading-[normal] overflow-ellipsis overflow-hidden">cadmonkey</p>
       </div>
     </div>
@@ -78,7 +76,7 @@ function TabItemCompact({ active, onClick }: { active: boolean, onClick: () => v
     >
       {active && <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />}
       <Language />
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#1c1c1c] text-[14px] text-nowrap">Workspace</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#212121] text-[14px] text-nowrap">Workspace</p>
     </div>
   );
 }
@@ -104,14 +102,14 @@ function TabItemCompact1({ active, onClick }: { active: boolean, onClick: () => 
     >
       {active && <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />}
       <Cloud />
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#1c1c1c] text-[14px] text-nowrap">Gallery</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#212121] text-[14px] text-nowrap">Gallery</p>
     </div>
   );
 }
 
 function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
   return (
-    <div className="bg-[#f8f4ed] content-stretch flex gap-[6px] items-center p-[2px] relative rounded-[8px] shrink-0" data-name="Tab Group Compact Primary">
+    <div className="bg-[#F3F1E4] content-stretch flex gap-[6px] items-center p-[2px] relative rounded-[8px] shrink-0" data-name="Tab Group Compact Primary">
       <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[8px]" />
       <TabItemCompact active={activeView === 'workspace'} onClick={() => onViewChange('workspace')} />
       <TabItemCompact1 active={activeView === 'gallery'} onClick={() => onViewChange('gallery')} />
@@ -202,7 +200,7 @@ function RightSide({ activeView, onViewChange, onDownload, downloadDisabled }: {
 
 function WorkspaceHeader({ activeView, onViewChange, onDownload, downloadDisabled }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, onDownload: () => void, downloadDisabled: boolean }) {
   return (
-    <div className="bg-[#fcfbf8] relative shrink-0 w-full" data-name="Workspace Header">
+    <div className="bg-[#F3F1E4] relative shrink-0 w-full" data-name="Workspace Header">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex gap-[24px] items-center pl-0 pr-[20px] py-0 relative w-full">
           <LeftSide />
@@ -219,8 +217,8 @@ function DateTime() {
 
 function Message({ content }: { content: string }) {
   return (
-    <div className="bg-[#f8f4ed] content-stretch flex items-center justify-end p-[12px] relative rounded-[12px] shrink-0 w-[326px]" data-name="Message">
-      <p className="basis-0 font-['Inter:Regular',sans-serif] font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#1c1c1c] text-[12px] text-right whitespace-pre-wrap">{content}</p>
+    <div className="bg-[#F3F1E4] content-stretch flex items-center justify-end p-[12px] relative rounded-[12px] shrink-0 w-[326px]" data-name="Message">
+      <p className="basis-0 font-['Inter:Regular',sans-serif] font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#212121] text-[12px] text-right whitespace-pre-wrap">{content}</p>
     </div>
   );
 }
@@ -369,7 +367,7 @@ function Container({ prompt, setPrompt, handleGenerate, isLoading }: any) {
             handleGenerate();
           }
         }}
-        className="size-full bg-transparent border-none outline-none resize-none font-['Inter:Regular',sans-serif] text-[#1c1c1c] text-[14px]"
+        className="size-full bg-transparent border-none outline-none resize-none font-['Inter:Regular',sans-serif] text-[#212121] text-[14px]"
       />
     </div>
   );
@@ -612,7 +610,7 @@ export default function Workspace() {
   };
 
   return (
-    <div className="bg-[#fcfbf8] relative size-full" data-name="Workspace">
+    <div className="bg-[#F3F1E4] relative size-full" data-name="Workspace">
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col gap-[6px] items-start justify-center p-[12px] relative size-full">
           <WorkspaceHeader
