@@ -18,7 +18,7 @@ function LovableLogo() {
 function Frame4() {
   return (
     <div className="basis-0 content-stretch flex flex-col gap-[2px] grow items-start min-h-px min-w-px relative shrink-0">
-      <div className="flex flex-col font-['Inter:Medium',sans-serif] font-medium justify-center leading-[0] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[#212121] text-[16px] text-nowrap w-full">
+      <div className="flex flex-col font-medium justify-center leading-[0] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[#212121] text-[16px] text-nowrap w-full">
         <p className="leading-[normal] overflow-ellipsis overflow-hidden">cadmonkey</p>
       </div>
     </div>
@@ -76,7 +76,7 @@ function TabItemCompact({ active, onClick }: { active: boolean, onClick: () => v
     >
       {active && <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />}
       <Language />
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#212121] text-[14px] text-nowrap">Workspace</p>
+      <p className="font-normal leading-[normal] not-italic relative shrink-0 text-[#212121] text-[14px] text-nowrap">Workspace</p>
     </div>
   );
 }
@@ -102,7 +102,7 @@ function TabItemCompact1({ active, onClick }: { active: boolean, onClick: () => 
     >
       {active && <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />}
       <Cloud />
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#212121] text-[14px] text-nowrap">Gallery</p>
+      <p className="font-normal leading-[normal] not-italic relative shrink-0 text-[#212121] text-[14px] text-nowrap">Gallery</p>
     </div>
   );
 }
@@ -128,7 +128,7 @@ function Tabs({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery
 function PricingSecondaryButtonCompact() {
   return (
     <div className="bg-[#f7ebff] content-stretch flex gap-[8px] h-[28px] items-center justify-center p-[6px] relative rounded-[8px] shrink-0" data-name="Pricing Secondary Button Compact">
-      <p className="font-['Inter:Medium',sans-serif] font-medium leading-[normal] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[#60605e] text-[14px] text-nowrap">Upgrade</p>
+      <p className="font-medium leading-[normal] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[#60605e] text-[14px] text-nowrap">Upgrade</p>
     </div>
   );
 }
@@ -143,7 +143,7 @@ function ButtonComponent() {
 
 function VersionBadge() {
   return (
-    <div className="content-stretch flex items-center justify-center px-3 py-1 bg-[#eceae4] text-[#60605e] text-xs font-['Inter:Medium',sans-serif] rounded-full shrink-0">
+    <div className="content-stretch flex items-center justify-center px-3 py-1 bg-[#eceae4] text-[#60605e] text-xs font-medium rounded-full shrink-0">
       {APP_VERSION}
     </div>
   );
@@ -154,7 +154,7 @@ function PrimaryButtonCompact({ onClick, disabled }: { onClick: () => void, disa
     <button
       onClick={onClick}
       disabled={disabled}
-      className="bg-[#1e53f1] content-stretch flex h-[28px] items-center justify-center px-3 relative rounded-[8px] shrink-0 text-white text-sm font-['Inter:Medium',sans-serif] hover:bg-[#1a47d1] disabled:opacity-50 disabled:cursor-not-allowed"
+      className="bg-[#537CF7] content-stretch flex h-[28px] items-center justify-center px-3 relative rounded-[8px] shrink-0 text-white text-sm font-medium hover:bg-[#4568d4] disabled:opacity-50 disabled:cursor-not-allowed"
       data-name="Primary Button Compact"
       aria-label="Download model"
     >
@@ -218,7 +218,7 @@ function DateTime() {
 function Message({ content }: { content: string }) {
   return (
     <div className="bg-[#F3F1E4] content-stretch flex items-center justify-end p-[12px] relative rounded-[12px] shrink-0 w-[326px]" data-name="Message">
-      <p className="basis-0 font-['Inter:Regular',sans-serif] font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#212121] text-[12px] text-right whitespace-pre-wrap">{content}</p>
+      <p className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#212121] text-[12px] text-right whitespace-pre-wrap">{content}</p>
     </div>
   );
 }
@@ -265,7 +265,7 @@ function Message1({ content }: { content: string }) {
     <div className="bg-[#fcfbf8] relative rounded-[12px] shrink-0 w-full" data-name="Message">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center p-[12px] relative w-full">
-          <div className="basis-0 font-['Inter:Regular',sans-serif] font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#1c1c1c] text-[14px]">
+          <div className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#212121] text-[14px]">
             <pre className="whitespace-pre-wrap font-mono text-sm">{content}</pre>
           </div>
         </div>
@@ -367,7 +367,7 @@ function Container({ prompt, setPrompt, handleGenerate, isLoading }: any) {
             handleGenerate();
           }
         }}
-        className="size-full bg-transparent border-none outline-none resize-none font-['Inter:Regular',sans-serif] text-[#212121] text-[14px]"
+        className="size-full bg-transparent border-none outline-none resize-none font-normal text-[#212121] text-[14px]"
       />
     </div>
   );
@@ -441,7 +441,7 @@ function WorkspacePreview({ scadCode, isLoading }: any) {
 
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/5 z-10">
-          <div className="text-sm text-gray-600 font-['Inter:Medium',sans-serif]">Generating Code...</div>
+          <div className="text-sm text-gray-600 font-medium">Generating Code...</div>
         </div>
       )}
       <div className="flex-1 relative z-10">
