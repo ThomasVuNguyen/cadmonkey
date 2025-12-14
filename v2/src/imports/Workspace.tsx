@@ -1,6 +1,11 @@
 import svgPaths from "./svg-227mre0lzr";
 import imgLovableIconBgLightRemovebgPreview1 from "figma:asset/f34f4e53c1ee197ce2bdf05234bc70a842167409.png";
 import Gallery from "../components/Gallery";
+import { ModelService } from "../services/firestore";
+import { spawnOpenSCAD } from "../lib/runner/openscad-runner";
+import packageJson from "../../package.json";
+
+const APP_VERSION = `v${packageJson.version}`;
 
 function LovableLogo() {
   return (
@@ -138,55 +143,70 @@ function ButtonComponent() {
   );
 }
 
-function PrimaryButtonCompact() {
+function VersionBadge() {
   return (
-    <div className="bg-[#1e53f1] content-stretch flex h-[28px] items-center justify-center p-[6px] relative rounded-[8px] shrink-0" data-name="Primary Button Compact">
-      <p className="font-['Inter:Medium',sans-serif] font-medium leading-[normal] not-italic overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-center text-nowrap text-white">Download</p>
+    <div className="content-stretch flex items-center justify-center px-3 py-1 bg-[#eceae4] text-[#60605e] text-xs font-['Inter:Medium',sans-serif] rounded-full shrink-0">
+      {APP_VERSION}
     </div>
   );
 }
 
-function ButtonComponent1() {
+function PrimaryButtonCompact({ onClick, disabled }: { onClick: () => void, disabled: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="bg-[#1e53f1] content-stretch flex h-[28px] items-center justify-center px-3 relative rounded-[8px] shrink-0 text-white text-sm font-['Inter:Medium',sans-serif] hover:bg-[#1a47d1] disabled:opacity-50 disabled:cursor-not-allowed"
+      data-name="Primary Button Compact"
+      aria-label="Download model"
+    >
+      Download
+    </button>
+  );
+}
+
+function ButtonComponent1({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
   return (
     <div className="content-stretch flex items-start relative shrink-0" data-name="Button Component">
-      <PrimaryButtonCompact />
+      <PrimaryButtonCompact onClick={onClick} disabled={disabled} />
     </div>
   );
 }
 
-function PublishMenu() {
+function PublishMenu({ onDownload, disabled }: { onDownload: () => void; disabled: boolean }) {
   return (
     <div className="content-stretch flex flex-col items-end relative shrink-0" data-name="Publish Menu">
-      <ButtonComponent1 />
+      <ButtonComponent1 onClick={onDownload} disabled={disabled} />
     </div>
   );
 }
 
-function ProjectActions() {
+function ProjectActions({ onDownload, disabled }: { onDownload: () => void; disabled: boolean }) {
   return (
     <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Project Actions">
+      <VersionBadge />
       <ButtonComponent />
-      <PublishMenu />
+      <PublishMenu onDownload={onDownload} disabled={disabled} />
     </div>
   );
 }
 
-function RightSide({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
+function RightSide({ activeView, onViewChange, onDownload, downloadDisabled }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, onDownload: () => void, downloadDisabled: boolean }) {
   return (
     <div className="basis-0 content-stretch flex grow items-center justify-between min-h-px min-w-px relative shrink-0" data-name="Right Side">
       <Tabs activeView={activeView} onViewChange={onViewChange} />
-      <ProjectActions />
+      <ProjectActions onDownload={onDownload} disabled={downloadDisabled} />
     </div>
   );
 }
 
-function WorkspaceHeader({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
+function WorkspaceHeader({ activeView, onViewChange, onDownload, downloadDisabled }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, onDownload: () => void, downloadDisabled: boolean }) {
   return (
     <div className="bg-[#fcfbf8] relative shrink-0 w-full" data-name="Workspace Header">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex gap-[24px] items-center pl-0 pr-[20px] py-0 relative w-full">
           <LeftSide />
-          <RightSide activeView={activeView} onViewChange={onViewChange} />
+          <RightSide activeView={activeView} onViewChange={onViewChange} onDownload={onDownload} downloadDisabled={downloadDisabled} />
         </div>
       </div>
     </div>
@@ -414,14 +434,21 @@ function AiChatBox({ prompt, setPrompt, handleGenerate, isLoading, messages }: a
 
 function WorkspacePreview({ scadCode, isLoading }: any) {
   return (
-    <div className="basis-0 bg-white grow h-full min-h-px min-w-px relative rounded-[16px] shrink-0 overflow-hidden" data-name="Workspace Preview">
-      <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)] z-20" />
+    <div
+      className="basis-0 bg-white grow h-full min-h-[600px] min-w-px relative rounded-[16px] shrink-0 overflow-hidden flex flex-col"
+      style={{ height: 'calc(100vh - 140px)' }}
+      data-name="Workspace Preview"
+    >
+      <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)] z-0" />
+
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/5 z-10">
           <div className="text-sm text-gray-600 font-['Inter:Medium',sans-serif]">Generating Code...</div>
         </div>
       )}
-      <Mini3DViewer scadCode={scadCode} />
+      <div className="flex-1 relative z-10">
+        <Mini3DViewer scadCode={scadCode} />
+      </div>
     </div>
   );
 }
@@ -439,6 +466,7 @@ export default function Workspace() {
   const [activeView, setActiveView] = useState<'workspace' | 'gallery'>('workspace');
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [scadCode, setScadCode] = useState('');
   /* Define default Cat message if we want history, or start empty. Let's start empty for now or use the placeholder. */
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
@@ -495,6 +523,7 @@ export default function Workspace() {
               const data = JSON.parse(line.slice(6));
               if (data.token) {
                 generatedCode += data.token;
+                setScadCode(generatedCode);
 
                 // Update the last message (assistant) with new token
                 setMessages(prev => {
@@ -512,6 +541,18 @@ export default function Workspace() {
         }
       }
       setScadCode(generatedCode);
+
+      // Auto-save to Firestore database
+      if (generatedCode.trim()) {
+        try {
+          console.log('💾 Saving model to Firestore...');
+          const modelId = await ModelService.saveModel(userPrompt, generatedCode);
+          console.log('✅ Model saved with ID:', modelId);
+        } catch (saveError) {
+          console.error('❌ Failed to save model to Firestore:', saveError);
+          // Don't block user workflow if save fails
+        }
+      }
     } catch (err: any) {
       console.error('Generation failed', err);
       // alert('Generation failed: ' + err);
@@ -530,11 +571,56 @@ export default function Workspace() {
     setActiveView('workspace');
   };
 
+  const handleDownload = async (format: 'stl' | 'glb' | '3mf' | 'off' = 'stl') => {
+    if (!scadCode.trim() || isExporting) return;
+    setIsExporting(true);
+    try {
+      const job = spawnOpenSCAD(
+        {
+          mountArchives: true,
+          inputs: [{ path: '/model.scad', content: scadCode }],
+          args: [
+            '/model.scad',
+            '-o', `/output.${format}`,
+            '--backend=manifold',
+            `--export-format=${format}`,
+            '--enable=lazy-union',
+          ],
+          outputPaths: [`output.${format}`],
+        },
+        () => {}
+      );
+
+      const result = await job;
+      if (result.error) throw new Error(result.error);
+      if (!result.outputs || result.outputs.length === 0) {
+        throw new Error('No output generated');
+      }
+      const [, dataUrl] = result.outputs[0];
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `model.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      console.error('Export failed:', err);
+      alert(`Export failed: ${err.message || err}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="bg-[#fcfbf8] relative size-full" data-name="Workspace">
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col gap-[6px] items-start justify-center p-[12px] relative size-full">
-          <WorkspaceHeader activeView={activeView} onViewChange={setActiveView} />
+          <WorkspaceHeader
+            activeView={activeView}
+            onViewChange={setActiveView}
+            onDownload={() => handleDownload('stl')}
+            downloadDisabled={isLoading || isExporting || !scadCode.trim()}
+          />
           {activeView === 'workspace' ? (
             <Frame2 prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} scadCode={scadCode} messages={messages} />
           ) : (
