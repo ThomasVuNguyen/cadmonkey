@@ -8,6 +8,10 @@ src/wasm
 package-lock.json
 .DS_Store
 
+# Environment variables
+.env.local
+.env*.local
+
 
 # backend
 

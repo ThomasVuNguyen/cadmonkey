@@ -1,5 +1,6 @@
 import svgPaths from "./svg-227mre0lzr";
 import imgLovableIconBgLightRemovebgPreview1 from "figma:asset/f34f4e53c1ee197ce2bdf05234bc70a842167409.png";
+import Gallery from "../components/Gallery";
 
 function LovableLogo() {
   return (
@@ -63,10 +64,14 @@ function Language() {
   );
 }
 
-function TabItemCompact() {
+function TabItemCompact({ active, onClick }: { active: boolean, onClick: () => void }) {
   return (
-    <div className="bg-[#fcfbf8] content-stretch flex gap-[2px] items-center justify-center p-[6px] relative rounded-[6px] shrink-0" data-name="Tab Item Compact">
-      <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />
+    <div
+      onClick={onClick}
+      className={`${active ? 'bg-[#fcfbf8]' : 'bg-transparent hover:bg-[#f0ede6]'} content-stretch flex gap-[2px] items-center justify-center p-[6px] relative rounded-[6px] shrink-0 cursor-pointer transition-colors`}
+      data-name="Tab Item Compact"
+    >
+      {active && <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />}
       <Language />
       <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#1c1c1c] text-[14px] text-nowrap">Workspace</p>
     </div>
@@ -85,28 +90,34 @@ function Cloud() {
   );
 }
 
-function TabItemCompact1() {
+function TabItemCompact1({ active, onClick }: { active: boolean, onClick: () => void }) {
   return (
-    <div className="content-stretch flex items-center justify-center p-[6px] relative rounded-[6px] shrink-0" data-name="Tab Item Compact">
+    <div
+      onClick={onClick}
+      className={`${active ? 'bg-[#fcfbf8]' : 'bg-transparent hover:bg-[#f0ede6]'} content-stretch flex gap-[2px] items-center justify-center p-[6px] relative rounded-[6px] shrink-0 cursor-pointer transition-colors`}
+      data-name="Tab Item Compact"
+    >
+      {active && <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_14px_0px_rgba(255,255,255,0.1),0px_4px_14px_0px_rgba(0,0,0,0.15)]" />}
       <Cloud />
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[normal] not-italic relative shrink-0 text-[#1c1c1c] text-[14px] text-nowrap">Gallery</p>
     </div>
   );
 }
 
-function TabGroupCompactPrimary() {
+function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
   return (
     <div className="bg-[#f8f4ed] content-stretch flex gap-[6px] items-center p-[2px] relative rounded-[8px] shrink-0" data-name="Tab Group Compact Primary">
       <div aria-hidden="true" className="absolute border border-[#eceae4] border-solid inset-0 pointer-events-none rounded-[8px]" />
-      <TabItemCompact />
-      <TabItemCompact1 />
+      <TabItemCompact active={activeView === 'workspace'} onClick={() => onViewChange('workspace')} />
+      <TabItemCompact1 active={activeView === 'gallery'} onClick={() => onViewChange('gallery')} />
     </div>
   );
 }
 
-function Tabs() {
+function Tabs({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
   return (
     <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Tabs">
-      <TabGroupCompactPrimary />
+      <TabGroupCompactPrimary activeView={activeView} onViewChange={onViewChange} />
     </div>
   );
 }
@@ -160,22 +171,22 @@ function ProjectActions() {
   );
 }
 
-function RightSide() {
+function RightSide({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
   return (
     <div className="basis-0 content-stretch flex grow items-center justify-between min-h-px min-w-px relative shrink-0" data-name="Right Side">
-      <Tabs />
+      <Tabs activeView={activeView} onViewChange={onViewChange} />
       <ProjectActions />
     </div>
   );
 }
 
-function WorkspaceHeader() {
+function WorkspaceHeader({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
   return (
     <div className="bg-[#fcfbf8] relative shrink-0 w-full" data-name="Workspace Header">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex gap-[24px] items-center pl-0 pr-[20px] py-0 relative w-full">
           <LeftSide />
-          <RightSide />
+          <RightSide activeView={activeView} onViewChange={onViewChange} />
         </div>
       </div>
     </div>
@@ -282,8 +293,10 @@ import { useState } from "react";
 
 // ... [existing imports]
 
-// Backend URL
-const STREAM_URL = "/api/generate";
+// Backend URL - uses environment variable
+// In development: /api/generate (proxied by Vite)
+// In production: direct Modal URL
+const STREAM_URL = import.meta.env.VITE_API_URL || "/api/generate";
 
 // [Intermediate components with props]
 
@@ -423,6 +436,7 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
 }
 
 export default function Workspace() {
+  const [activeView, setActiveView] = useState<'workspace' | 'gallery'>('workspace');
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [scadCode, setScadCode] = useState('');
@@ -430,7 +444,7 @@ export default function Workspace() {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
 
   const handleGenerate = async () => {
-    alert("handleGenerate called!"); // Visual debug
+
     console.log("handleGenerate triggered. Prompt:", prompt);
     if (!prompt.trim()) {
       console.log("Empty prompt, aborting.");
@@ -507,12 +521,27 @@ export default function Workspace() {
     }
   };
 
+  const handleModelSelect = (selectedScadCode: string, selectedPrompt: string) => {
+    setScadCode(selectedScadCode);
+    setMessages([
+      { role: 'user', content: selectedPrompt },
+      { role: 'assistant', content: selectedScadCode }
+    ]);
+    setActiveView('workspace');
+  };
+
   return (
     <div className="bg-[#fcfbf8] relative size-full" data-name="Workspace">
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col gap-[6px] items-start justify-center p-[12px] relative size-full">
-          <WorkspaceHeader />
-          <Frame2 prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} scadCode={scadCode} messages={messages} />
+          <WorkspaceHeader activeView={activeView} onViewChange={setActiveView} />
+          {activeView === 'workspace' ? (
+            <Frame2 prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} scadCode={scadCode} messages={messages} />
+          ) : (
+            <div className="basis-0 grow min-h-px min-w-px relative rounded-[16px] shrink-0 overflow-hidden">
+              <Gallery onModelSelect={handleModelSelect} />
+            </div>
+          )}
         </div>
       </div>
     </div>
