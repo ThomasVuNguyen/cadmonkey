@@ -27,36 +27,118 @@ export default function Mini3DViewer({
     const [error, setError] = useState<string | null>(null);
     const [modelUrl, setModelUrl] = useState<string | null>(null);
     const modelUrlRef = useRef<string | null>(null);
+    const lastCodeRef = useRef<string>('');
+    const lastChangeTimeRef = useRef<number>(0);
+    const renderInProgressRef = useRef<boolean>(false);
+    const stableCodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const hadModelRef = useRef<boolean>(false);
 
     useEffect(() => {
         return () => {
             if (modelUrlRef.current) {
                 URL.revokeObjectURL(modelUrlRef.current);
             }
+            if (stableCodeTimeoutRef.current) {
+                clearTimeout(stableCodeTimeoutRef.current);
+            }
         };
     }, []);
 
     useEffect(() => {
         if (!scadCode) {
-            setModelUrl(null);
+            // If we had a model and code becomes empty, clear it (new prompt starting)
+            if (hadModelRef.current || modelUrlRef.current) {
+                console.log('🔄 [Mini3DViewer] Code cleared - clearing previous model');
+                if (modelUrlRef.current) {
+                    URL.revokeObjectURL(modelUrlRef.current);
+                    modelUrlRef.current = null;
+                }
+                setModelUrl(null);
+                hadModelRef.current = false;
+            }
             setError(null);
             setIsRendering(false);
+            lastCodeRef.current = '';
             return;
         }
 
         let cancelled = false;
+        const now = Date.now();
+        const codeChanged = scadCode !== lastCodeRef.current;
+        
+        // Detect if code has reset (new prompt started)
+        // This happens when code goes from long to short (significant decrease)
+        const previousLength = lastCodeRef.current.length;
+        const currentLength = scadCode.length;
+        const isCodeReset = previousLength > 100 && currentLength < previousLength * 0.3;
+        
+        // If code reset detected, clear the previous model immediately and reset tracking
+        if (isCodeReset) {
+            console.log('🔄 [Mini3DViewer] Code reset detected - clearing previous model');
+            if (modelUrlRef.current) {
+                URL.revokeObjectURL(modelUrlRef.current);
+                modelUrlRef.current = null;
+            }
+            setModelUrl(null);
+            setError(null);
+            setIsRendering(false);
+            renderInProgressRef.current = false;
+            hadModelRef.current = false;
+            // Reset tracking refs so new code stream is detected correctly
+            lastCodeRef.current = scadCode;
+            lastChangeTimeRef.current = now;
+            // Continue to allow render to start with new code
+        } else if (codeChanged) {
+            // Track code changes for streaming detection
+            lastChangeTimeRef.current = now;
+            lastCodeRef.current = scadCode;
+        }
+
+        // Calculate time since last change AFTER potential reset
+        const timeSinceLastChange = now - lastChangeTimeRef.current;
+
+        // Helper function to check if code looks complete (has balanced braces)
+        const isCodeComplete = (code: string): boolean => {
+            if (!code.trim()) return false;
+            const openBraces = (code.match(/\{/g) || []).length;
+            const closeBraces = (code.match(/\}/g) || []).length;
+            const trimmed = code.trim();
+            // Code is likely complete if braces are balanced and ends properly
+            return openBraces === closeBraces && openBraces > 0 && 
+                   (trimmed.endsWith(';') || trimmed.endsWith('}') || trimmed.endsWith(')'));
+        };
+
+        // Detect if code is actively streaming (changing frequently)
+        // After reset, treat as streaming to start rendering quickly
+        const isStreaming = (isCodeReset || codeChanged) && timeSinceLastChange < 500;
+        const codeComplete = isCodeComplete(scadCode);
+        
+        // Clear any existing stable code timeout
+        if (stableCodeTimeoutRef.current) {
+            clearTimeout(stableCodeTimeoutRef.current);
+            stableCodeTimeoutRef.current = null;
+        }
 
         const render = async () => {
+            // Prevent multiple simultaneous renders
+            if (renderInProgressRef.current) {
+                return;
+            }
+
+            // Capture the code at render start to verify it hasn't changed
+            const codeAtRenderStart = scadCode;
+            renderInProgressRef.current = true;
             console.log('🎨 [Mini3DViewer] Starting render...', scadCode.substring(0, 50) + '...');
             setIsRendering(true);
-            setError(null);
+            // Don't clear error immediately - let it persist if code is incomplete
+            // Only clear error on successful render
 
             try {
                 const job = spawnOpenSCAD({
                     mountArchives: true,
                     inputs: [{
                         path: '/preview.scad',
-                        content: scadCode,
+                        content: codeAtRenderStart,
                     }],
                     args: [
                         '/preview.scad',
@@ -80,35 +162,67 @@ export default function Mini3DViewer({
                     elapsedMillis: result.elapsedMillis
                 });
 
-                if (cancelled) {
-                    console.log('❌ [Mini3DViewer] Render cancelled');
+                // Check if render was cancelled or code changed
+                if (cancelled || scadCode !== codeAtRenderStart) {
+                    console.log('❌ [Mini3DViewer] Render cancelled or code changed');
+                    renderInProgressRef.current = false;
+                    setIsRendering(false); // Always clear rendering state
+                    return;
+                }
+
+                // Verify code hasn't changed before processing result
+                if (scadCode !== codeAtRenderStart) {
+                    console.log('⚠️ [Mini3DViewer] Code changed during render, discarding result');
+                    renderInProgressRef.current = false;
+                    setIsRendering(false);
                     return;
                 }
 
                 if (result.error) {
-                    console.error('❌ [OpenSCAD] Error:', result.error);
-                    throw new Error(result.error);
+                    // During streaming, suppress errors for incomplete code
+                    // Only show errors if code has been stable for a while
+                    const isStable = !isStreaming && timeSinceLastChange > 1000;
+                    if (isStable || codeComplete) {
+                        console.error('❌ [OpenSCAD] Error:', result.error);
+                        if (!cancelled && scadCode === codeAtRenderStart) {
+                            setError(result.error);
+                        }
+                    } else {
+                        console.log('⚠️ [OpenSCAD] Error during streaming (suppressed):', result.error);
+                        // Don't set error during streaming - code is likely incomplete
+                    }
+                    renderInProgressRef.current = false;
+                    setIsRendering(false);
+                    return;
                 }
 
                 const offBuffer = result.outputs?.[0]?.[1];
                 if (!offBuffer) {
-                    console.error('❌ [OpenSCAD] No output generated');
-                    throw new Error('No OFF output received from OpenSCAD');
+                    const isStable = !isStreaming && timeSinceLastChange > 1000;
+                    if (isStable || codeComplete) {
+                        console.error('❌ [OpenSCAD] No output generated');
+                        if (!cancelled && scadCode === codeAtRenderStart) {
+                            setError('No OFF output received from OpenSCAD');
+                        }
+                    }
+                    renderInProgressRef.current = false;
+                    setIsRendering(false);
+                    return;
                 }
 
-                const offText = offBuffer; // In the worker/runner, readFile returns string or Uint8Array. 
-                // Our worker implementation returns string for text files usually, but let's check.
-                // Actually our runner/worker impl returns string from FS.readFile for text?
-                // Emscripten FS.readFile return formatting depends on options.
-                // In openscad-worker.ts: instance.FS.readFile(path) -> defaults to Uint8Array usually?
-                // Let's assume text for now or handle both?
-                // parseOff expects string.
-
                 let textContent = '';
-                if (typeof offText === 'string') {
-                    textContent = offText;
+                if (typeof offBuffer === 'string') {
+                    textContent = offBuffer;
                 } else {
-                    textContent = new TextDecoder().decode(offText as any);
+                    textContent = new TextDecoder().decode(offBuffer as any);
+                }
+
+                // Final check before updating model - ensure code hasn't changed
+                if (scadCode !== codeAtRenderStart || cancelled) {
+                    console.log('⚠️ [Mini3DViewer] Code changed or cancelled before model update, discarding');
+                    renderInProgressRef.current = false;
+                    setIsRendering(false);
+                    return;
                 }
 
                 console.log('✅ [OpenSCAD] Parsing OFF data...');
@@ -122,30 +236,67 @@ export default function Mini3DViewer({
                 const url = URL.createObjectURL(glbBlob);
                 console.log('✅ [OpenSCAD] Object URL created:', url.substring(0, 50) + '...');
 
-                if (modelUrlRef.current) {
-                    URL.revokeObjectURL(modelUrlRef.current);
+                // Final verification before state update
+                if (scadCode === codeAtRenderStart && !cancelled) {
+                    if (modelUrlRef.current) {
+                        URL.revokeObjectURL(modelUrlRef.current);
+                    }
+                    modelUrlRef.current = url;
+                    setModelUrl(url);
+                    hadModelRef.current = true; // Track that we have a model
+                    setError(null); // Clear error on successful render
+                    setIsRendering(false);
+                    renderInProgressRef.current = false;
+                    console.log('🎉 [Mini3DViewer] Render complete!');
+                } else {
+                    // Code changed, clean up the URL we created
+                    URL.revokeObjectURL(url);
+                    renderInProgressRef.current = false;
+                    setIsRendering(false);
                 }
-                modelUrlRef.current = url;
-                setModelUrl(url);
-                console.log('🎉 [Mini3DViewer] Render complete!');
 
             } catch (err: any) {
                 console.error('❌ [Mini3DViewer] Render failed:', err);
-                if (!cancelled) {
-                    setError(err.message || 'Render failed');
-                    setModelUrl(null);
+                // Only update state if code hasn't changed
+                if (scadCode === codeAtRenderStart && !cancelled) {
+                    const isStable = !isStreaming && timeSinceLastChange > 1000;
+                    if (isStable || codeComplete) {
+                        // Only show errors for stable/complete code
+                        setError(err.message || 'Render failed');
+                    } else {
+                        console.log('⚠️ [Mini3DViewer] Error during streaming (suppressed)');
+                    }
                 }
-            } finally {
-                if (!cancelled) {
-                    setIsRendering(false);
-                }
+                renderInProgressRef.current = false;
+                setIsRendering(false); // Always clear rendering state
             }
         };
 
-        render();
+        // Progressive rendering strategy:
+        // - During streaming: render very quickly (50ms) to show progress
+        // - When code looks complete: render immediately (0ms delay)
+        // - When code stabilizes: render after a short delay (200ms) to catch final state
+        // - After code reset: render immediately to start fresh
+        let delay = 50; // Default: fast rendering during streaming
+        
+        if (isCodeReset) {
+            delay = 0; // Render immediately after reset to start fresh
+        } else if (codeComplete) {
+            delay = 0; // Render immediately for complete code
+        } else if (!isStreaming && timeSinceLastChange > 500) {
+            // Code has stabilized but might not be complete - wait a bit
+            delay = 200;
+        }
+        
+        const timeoutId = setTimeout(() => {
+            if (!cancelled && !renderInProgressRef.current) {
+                render();
+            }
+        }, delay);
 
         return () => {
             cancelled = true;
+            clearTimeout(timeoutId);
         };
     }, [scadCode]);
 
@@ -165,10 +316,10 @@ export default function Mini3DViewer({
         >
             {/* Rendering state */}
             {isRendering && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+                <div className="absolute inset-0 flex items-center justify-center z-10" style={{ backgroundColor: 'rgba(245, 245, 245, 0.95)' }}>
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
-                        <div className="text-sm text-gray-600">Rendering 3D model...</div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-2" style={{ borderColor: '#212121' }}></div>
+                        <div className="text-sm font-medium" style={{ color: '#212121' }}>Rendering 3D model...</div>
                     </div>
                 </div>
             )}
