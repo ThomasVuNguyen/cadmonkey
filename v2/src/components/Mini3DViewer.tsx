@@ -162,14 +162,14 @@ export default function Mini3DViewer({
 
                 // Final check before updating state
                 if (scadCode === codeToRender && !cancelled) {
-                    if (modelUrlRef.current) {
-                        URL.revokeObjectURL(modelUrlRef.current);
-                    }
-                    modelUrlRef.current = url;
-                    setModelUrl(url);
+                if (modelUrlRef.current) {
+                    URL.revokeObjectURL(modelUrlRef.current);
+                }
+                modelUrlRef.current = url;
+                setModelUrl(url);
                     setError(null);
                     setIsRendering(false);
-                    console.log('🎉 [Mini3DViewer] Render complete!');
+                console.log('🎉 [Mini3DViewer] Render complete!');
                 } else {
                     // Code changed, clean up
                     URL.revokeObjectURL(url);
@@ -182,7 +182,7 @@ export default function Mini3DViewer({
                 if (scadCode === codeToRender && !cancelled) {
                     setError(err.message || 'Render failed');
                 }
-                setIsRendering(false);
+                    setIsRendering(false);
             }
         };
 
@@ -190,7 +190,7 @@ export default function Mini3DViewer({
         // This allows progressive rendering as code streams in
         renderTimeoutRef.current = setTimeout(() => {
             if (!cancelled) {
-                render();
+        render();
             }
         }, 100);
 

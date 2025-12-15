@@ -8,6 +8,23 @@ import { parseOff } from "../lib/io/import_off";
 import { exportGlb } from "../lib/io/export_glb";
 import packageJson from "../../package.json";
 
+// Hook to detect mobile screen size
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return isMobile;
+}
+
 const APP_VERSION = `v${packageJson.version}`;
 
 function LovableLogo() {
@@ -73,7 +90,7 @@ function Language() {
   );
 }
 
-function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
+function TabGroupCompactPrimary({ activeView, onViewChange, isMobile }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, isMobile?: boolean }) {
   const workspaceRef = useRef<HTMLButtonElement>(null);
   const galleryRef = useRef<HTMLButtonElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
@@ -99,11 +116,13 @@ function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'wor
     <div style={{
       display: 'inline-flex',
       alignItems: 'center',
-      backgroundColor: '#2a2a2a',
+      backgroundColor: isMobile ? '#212121' : '#2a2a2a',
       borderRadius: '8px',
-      padding: '4px',
+      padding: isMobile ? '6px' : '4px',
       gap: '4px',
-      position: 'relative'
+      position: 'relative',
+      width: isMobile ? '100%' : 'auto',
+      maxWidth: isMobile ? '300px' : 'none'
     }} data-name="Tab Group Compact Primary">
       {/* Sliding background indicator - sized to fit the active button */}
       {indicatorStyle.width > 0 && (
@@ -129,18 +148,19 @@ function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'wor
           zIndex: 1,
           backgroundColor: 'transparent',
           color: activeView === 'workspace' ? '#F3F1E4' : '#a0a0a0',
-          padding: '8px 20px',
+          padding: isMobile ? '10px 16px' : '8px 20px',
           border: 'none',
           borderRadius: '6px',
           cursor: 'pointer',
-          fontSize: '14px',
+          fontSize: isMobile ? '15px' : '14px',
           fontWeight: activeView === 'workspace' ? 500 : 400,
           transition: 'color 150ms ease-out',
           whiteSpace: 'nowrap',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          textAlign: 'center'
+          textAlign: 'center',
+          flex: isMobile ? 1 : 'none'
         }}
         role="button"
         aria-pressed={activeView === 'workspace'}
@@ -157,18 +177,19 @@ function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'wor
           zIndex: 1,
           backgroundColor: 'transparent',
           color: activeView === 'gallery' ? '#F3F1E4' : '#a0a0a0',
-          padding: '8px 20px',
+          padding: isMobile ? '10px 16px' : '8px 20px',
           border: 'none',
           borderRadius: '6px',
           cursor: 'pointer',
-          fontSize: '14px',
+          fontSize: isMobile ? '15px' : '14px',
           fontWeight: activeView === 'gallery' ? 500 : 400,
           transition: 'color 150ms ease-out',
           whiteSpace: 'nowrap',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          textAlign: 'center'
+          textAlign: 'center',
+          flex: isMobile ? 1 : 'none'
         }}
         role="button"
         aria-pressed={activeView === 'gallery'}
@@ -179,10 +200,10 @@ function TabGroupCompactPrimary({ activeView, onViewChange }: { activeView: 'wor
   );
 }
 
-function Tabs({ activeView, onViewChange }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void }) {
+function Tabs({ activeView, onViewChange, isMobile }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, isMobile?: boolean }) {
   return (
     <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Tabs">
-      <TabGroupCompactPrimary activeView={activeView} onViewChange={onViewChange} />
+      <TabGroupCompactPrimary activeView={activeView} onViewChange={onViewChange} isMobile={isMobile} />
     </div>
   );
 }
@@ -243,9 +264,9 @@ function DownloadCompact({ onDownload, disabled }: { onDownload: (format: 'stl' 
 
   return (
     <div ref={menuRef} style={{ position: 'relative' }}>
-      <button
+    <button
         onClick={() => !disabled && setShowMenu(!showMenu)}
-        disabled={disabled}
+      disabled={disabled}
         style={{ 
           backgroundColor: '#212121',
           border: 'none',
@@ -262,7 +283,7 @@ function DownloadCompact({ onDownload, disabled }: { onDownload: (format: 'stl' 
           opacity: disabled ? 0.6 : 1,
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2)'
         }}
-        aria-label="Download model"
+      aria-label="Download model"
         onMouseEnter={(e) => {
           if (!disabled) {
             e.currentTarget.style.backgroundColor = '#F86F54';
@@ -275,11 +296,11 @@ function DownloadCompact({ onDownload, disabled }: { onDownload: (format: 'stl' 
             e.currentTarget.style.transform = 'scale(1)';
           }
         }}
-      >
+    >
         <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
           <path d="M8 2v8M5 7l3 3 3-3" stroke="#F3F1E4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M3 13h10" stroke="#F3F1E4" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
+      </svg>
       </button>
       {showMenu && !disabled && (
         <div style={{
@@ -321,7 +342,7 @@ function DownloadCompact({ onDownload, disabled }: { onDownload: (format: 'stl' 
               }}
             >
               {item.label}
-            </button>
+    </button>
           ))}
         </div>
       )}
@@ -348,7 +369,7 @@ function RightSide({ activeView, onViewChange, onDownload, downloadDisabled }: {
 function WorkspaceHeader({ activeView, onViewChange, onDownload, downloadDisabled }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, onDownload: () => void, downloadDisabled: boolean }) {
   return (
     <div className="relative shrink-0" style={{ width: 'fit-content' }} data-name="Workspace Header">
-      <LeftSide />
+          <LeftSide />
     </div>
   );
 }
@@ -402,7 +423,7 @@ function UserResponse({ content }: { content: string }) {
   );
 }
 
-function Message1({ content }: { content: string }) {
+function Message1({ content, isWakingUp }: { content: string; isWakingUp?: boolean }) {
   const isEmpty = !content || content.trim() === '';
   
   return (
@@ -413,12 +434,12 @@ function Message1({ content }: { content: string }) {
             <div 
               className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#F3F1E4] text-[14px] generating-pulse"
             >
-              Generating...
+              {isWakingUp ? 'Waking up the AI model...' : 'Generating...'}
             </div>
           ) : (
-            <div className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#F3F1E4] text-[14px]">
-              <pre className="whitespace-pre-wrap font-mono text-sm">{content}</pre>
-            </div>
+          <div className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#F3F1E4] text-[14px]">
+            <pre className="whitespace-pre-wrap font-mono text-sm">{content}</pre>
+          </div>
           )}
         </div>
       </div>
@@ -430,16 +451,16 @@ function EditsAccordion() {
   return <div className="content-stretch flex flex-col items-start shrink-0 w-full" data-name="Edits Accordion" />;
 }
 
-function AiResponse({ content }: { content: string }) {
+function AiResponse({ content, isWakingUp }: { content: string; isWakingUp?: boolean }) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start justify-center relative shrink-0 w-full" data-name="AI response">
-      <Message1 content={content} />
+      <Message1 content={content} isWakingUp={isWakingUp} />
       <EditsAccordion />
     </div>
   );
 }
 
-function Frame1({ messages }: { messages: { role: 'user' | 'assistant', content: string }[] }) {
+function Frame1({ messages, isWakingUp }: { messages: { role: 'user' | 'assistant', content: string }[]; isWakingUp?: boolean }) {
   return (
     <div className="basis-0 content-stretch flex flex-col gap-[24px] grow items-start min-h-px min-w-px overflow-x-clip overflow-y-auto relative shrink-0 w-full">
       <DateTime />
@@ -447,7 +468,7 @@ function Frame1({ messages }: { messages: { role: 'user' | 'assistant', content:
         msg.role === 'user' ? (
           <UserResponse key={index} content={msg.content} />
         ) : (
-          <AiResponse key={index} content={msg.content} />
+          <AiResponse key={index} content={msg.content} isWakingUp={index === messages.length - 1 && msg.role === 'assistant' && isWakingUp} />
         )
       ))}
     </div>
@@ -569,19 +590,19 @@ function AiChatInput({ prompt, setPrompt, handleGenerate, isLoading }: any) {
   );
 }
 
-function AiChatBox({ prompt, setPrompt, handleGenerate, isLoading, messages }: any) {
+function AiChatBox({ prompt, setPrompt, handleGenerate, isLoading, messages, isMobile }: any) {
   return (
-    <div className="content-stretch flex flex-col gap-[24px] h-full items-start p-[12px] relative shrink-0 w-[500px]" data-name="AI Chat Box">
+    <div className={`content-stretch flex flex-col gap-[24px] ${isMobile ? 'h-full w-full' : 'h-full shrink-0 w-[500px]'} items-start p-[12px] relative`} data-name="AI Chat Box">
       <Frame1 messages={messages} />
-      <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />
+      {!isMobile && <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />}
     </div>
   );
 }
 
-function WorkspacePreview({ scadCode, isLoading, onDownload, downloadDisabled }: any) {
+function WorkspacePreview({ scadCode, isLoading, onDownload, downloadDisabled, isMobile }: any) {
   return (
     <div
-      className="basis-0 bg-[#212121] grow min-h-[600px] min-w-px rounded-[16px] shrink-0 overflow-hidden flex flex-col"
+      className={`basis-0 bg-[#212121] grow ${isMobile ? 'min-h-[400px]' : 'min-h-[600px]'} min-w-px rounded-[16px] shrink-0 overflow-hidden flex flex-col`}
       style={{ position: 'relative', flex: '1 1 0%' }}
       data-name="Workspace Preview"
     >
@@ -614,11 +635,40 @@ function WorkspacePreview({ scadCode, isLoading, onDownload, downloadDisabled }:
   );
 }
 
-function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messages, onDownload, downloadDisabled }: any) {
+function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messages, onDownload, downloadDisabled, isMobile, isWakingUp }: any) {
+  // For mobile: show code generation first, then replace with 3D view when done
+  const show3DView = isMobile && !isLoading && scadCode.trim();
+  const showCodeGeneration = isMobile && (isLoading || !scadCode.trim());
+
+  if (isMobile) {
+    return (
+      <div className="basis-0 content-stretch flex flex-col grow min-h-px min-w-px relative shrink-0 w-full" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Content area - takes available space, scrollable */}
+        <div className="flex-1 overflow-auto" style={{ flex: '1 1 0%', minHeight: 0 }}>
+          {showCodeGeneration && (
+            <div className="h-full">
+              <AiChatBox prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} messages={messages} isMobile={true} isWakingUp={isWakingUp} />
+            </div>
+          )}
+          {show3DView && (
+            <div className="h-full" style={{ minHeight: '400px' }}>
+              <WorkspacePreview scadCode={scadCode} isLoading={isLoading} onDownload={onDownload} downloadDisabled={downloadDisabled} isMobile={true} />
+            </div>
+          )}
+        </div>
+        {/* Input field pinned to bottom for mobile - always visible */}
+        <div className="shrink-0 mt-[12px]" style={{ flexShrink: 0 }}>
+          <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout: side-by-side
   return (
     <div className="basis-0 content-stretch flex gap-[12px] grow items-center min-h-px min-w-px relative shrink-0 w-full">
-      <AiChatBox prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} messages={messages} />
-      <WorkspacePreview scadCode={scadCode} isLoading={isLoading} onDownload={onDownload} downloadDisabled={downloadDisabled} />
+      <AiChatBox prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} messages={messages} isWakingUp={isWakingUp} />
+      <WorkspacePreview scadCode={scadCode} isLoading={isLoading} onDownload={onDownload} downloadDisabled={downloadDisabled} isMobile={false} />
     </div>
   );
 }
@@ -632,6 +682,8 @@ export default function Workspace() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   /* Define default Cat message if we want history, or start empty. Let's start empty for now or use the placeholder. */
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
+  const [isWakingUp, setIsWakingUp] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleGenerate = async () => {
 
@@ -646,6 +698,7 @@ export default function Workspace() {
     setPrompt(''); // Clear input
 
     setIsLoading(true);
+    setIsWakingUp(true); // Start with "waking up" message
     console.log("setIsLoading(true) called");
 
     try {
@@ -668,6 +721,7 @@ export default function Workspace() {
 
       const decoder = new TextDecoder();
       let generatedCode = '';
+      let firstTokenReceived = false;
 
       // Add a placeholder assistant message to stream into
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
@@ -684,6 +738,11 @@ export default function Workspace() {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.token) {
+                // First token received - switch from "waking up" to "generating"
+                if (!firstTokenReceived) {
+                  firstTokenReceived = true;
+                  setIsWakingUp(false);
+                }
                 generatedCode += data.token;
                 setScadCode(generatedCode);
 
@@ -821,14 +880,14 @@ export default function Workspace() {
     <div className="bg-[#212121] relative size-full" data-name="Workspace">
       <div className="flex flex-col size-full">
         <div className="content-stretch flex flex-col gap-[6px] items-start p-[12px] relative size-full">
-          <div className="flex items-center justify-between w-full gap-[12px]">
-            <WorkspaceHeader
-              activeView={activeView}
-              onViewChange={setActiveView}
+          <div className={`flex items-center justify-between w-full gap-[12px] ${isMobile ? 'flex-col items-start gap-[12px]' : ''}`}>
+          <WorkspaceHeader
+            activeView={activeView}
+            onViewChange={setActiveView}
               onDownload={() => {}}
               downloadDisabled={true}
             />
-            <Tabs activeView={activeView} onViewChange={setActiveView} />
+            {!isMobile && <Tabs activeView={activeView} onViewChange={setActiveView} />}
           </div>
           {activeView === 'workspace' ? (
             <Frame2 
@@ -840,6 +899,8 @@ export default function Workspace() {
               messages={messages}
               onDownload={handleDownload}
               downloadDisabled={isLoading || isExporting || !scadCode.trim()}
+              isMobile={isMobile}
+              isWakingUp={isWakingUp}
             />
           ) : (
             <div
@@ -850,6 +911,14 @@ export default function Workspace() {
             </div>
           )}
         </div>
+        {/* Mobile bottom navigation */}
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 bg-[#2a2a2a] border-t border-[rgba(243,241,228,0.15)] z-40" style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
+            <div className="flex items-center justify-center p-[8px]">
+              <TabGroupCompactPrimary activeView={activeView} onViewChange={setActiveView} isMobile={true} />
+            </div>
+          </div>
+        )}
       </div>
       {showDownloadModal && (
         <div className="fixed inset-0 bg-[rgba(0,0,0,0.55)] backdrop-blur-[4px] flex items-center justify-center z-50">
