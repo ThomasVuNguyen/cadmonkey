@@ -24,6 +24,11 @@ export default function Gallery({ onModelSelect }: GalleryProps) {
   // Validate if a model's code renders without errors
   const validateModel = async (scadCode: string): Promise<boolean> => {
     try {
+      // Skip validation for empty or very short code
+      if (!scadCode.trim() || scadCode.trim().length < 10) {
+        return false;
+      }
+
       const job = spawnOpenSCAD(
         {
           mountArchives: true,
@@ -33,12 +38,12 @@ export default function Gallery({ onModelSelect }: GalleryProps) {
           }],
           args: [
             '/validate.scad',
-            '-o', 'validate.off',
+            '-o', '/validate.off',
             '--backend=manifold',
             '--export-format=off',
             '--enable=lazy-union',
           ],
-          outputPaths: ['validate.off'],
+          outputPaths: ['/validate.off'],
         },
         () => {} // Stream callback
       );
@@ -48,6 +53,12 @@ export default function Gallery({ onModelSelect }: GalleryProps) {
       // Check if render succeeded and produced output
       if (result.error) {
         console.log('❌ Validation failed:', result.error);
+        return false;
+      }
+
+      // Check exit code
+      if (result.exitCode !== 0 && result.exitCode !== undefined) {
+        console.log('❌ Validation failed: OpenSCAD exited with code', result.exitCode);
         return false;
       }
 

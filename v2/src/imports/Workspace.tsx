@@ -522,38 +522,48 @@ function ArrowUpward() {
   );
 }
 
-function Container({ prompt, setPrompt, handleGenerate, isLoading }: any) {
+function Container({ prompt, setPrompt, handleGenerate, isLoading, isMobile }: any) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleFocus = () => {
-    // Scroll input into view when focused (for mobile keyboard)
-    if (textareaRef.current) {
-      // Use requestAnimationFrame for better timing
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const textarea = textareaRef.current;
-          if (textarea) {
-            // Scroll the textarea into view
-            textarea.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'end',
-              inline: 'nearest'
-            });
-            
-            // Also ensure parent container scrolls if needed
-            const parent = textarea.closest('[style*="overflow"]') as HTMLElement;
-            if (parent) {
-              const rect = textarea.getBoundingClientRect();
-              const parentRect = parent.getBoundingClientRect();
-              if (rect.bottom > parentRect.bottom) {
-                parent.scrollTop += (rect.bottom - parentRect.bottom) + 20; // Add padding
-              }
+  useEffect(() => {
+    if (isMobile && textareaRef.current) {
+      const textarea = textareaRef.current;
+      
+      const handleFocus = () => {
+        // Use visualViewport if available for better keyboard handling
+        if (window.visualViewport) {
+          const scrollIntoView = () => {
+            // Scroll the input container into view
+            const inputContainer = textarea.closest('[data-name="AI Chat Input"]');
+            if (inputContainer) {
+              inputContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }
-          }
-        }, 100); // Small delay to account for keyboard animation
-      });
+          };
+          
+          // Delay to allow keyboard to start opening
+          setTimeout(scrollIntoView, 100);
+          
+          // Also handle viewport resize (keyboard opening/closing)
+          const handleResize = () => {
+            setTimeout(scrollIntoView, 100);
+          };
+          
+          window.visualViewport.addEventListener('resize', handleResize);
+          return () => {
+            window.visualViewport?.removeEventListener('resize', handleResize);
+          };
+        } else {
+          // Fallback for browsers without visualViewport
+          setTimeout(() => {
+            textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        }
+      };
+
+      textarea.addEventListener('focus', handleFocus);
+      return () => textarea.removeEventListener('focus', handleFocus);
     }
-  };
+  }, [isMobile]);
 
   return (
     <div className="basis-0 content-stretch flex grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Container">
@@ -563,7 +573,6 @@ function Container({ prompt, setPrompt, handleGenerate, isLoading }: any) {
         onChange={(e) => setPrompt(e.target.value)}
         placeholder="type in an object name"
         disabled={isLoading}
-        onFocus={handleFocus}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -610,13 +619,16 @@ function ButtonGroup1({ onClick, disabled }: any) {
   );
 }
 
-function AiChatInput({ prompt, setPrompt, handleGenerate, isLoading }: any) {
+function AiChatInput({ prompt, setPrompt, handleGenerate, isLoading, isMobile }: any) {
   return (
-    <div className="bg-[#2a2a2a] h-[140px] relative rounded-[16px] shrink-0 w-full" data-name="AI Chat Input">
+    <div 
+      className="bg-[#2a2a2a] h-[140px] relative rounded-[16px] shrink-0 w-full"
+      data-name="AI Chat Input"
+    >
       <div aria-hidden="true" className="absolute border border-[rgba(243,241,228,0.15)] border-solid inset-0 pointer-events-none rounded-[16px]" />
       <div className="size-full">
         <div className="content-stretch flex flex-col gap-[8px] items-start p-[12px] relative size-full">
-          <Container prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />
+          <Container prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} isMobile={isMobile} />
           <ButtonGroup1 onClick={handleGenerate} disabled={isLoading || !prompt.trim()} />
         </div>
       </div>
@@ -673,45 +685,42 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
   // For mobile: show code generation first, then replace with 3D view when done
   const show3DView = isMobile && !isLoading && scadCode.trim();
   const showCodeGeneration = isMobile && (isLoading || !scadCode.trim());
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  // Handle visual viewport changes (keyboard show/hide) on mobile
+  // Handle keyboard visibility on mobile
   useEffect(() => {
-    if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
+    if (!isMobile) return;
 
-    const updateHeight = () => {
+    const updateKeyboardHeight = () => {
       if (window.visualViewport) {
-        setViewportHeight(window.visualViewport.height);
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const heightDiff = windowHeight - viewportHeight;
+        setKeyboardHeight(heightDiff > 150 ? heightDiff : 0); // Only consider it keyboard if > 150px
       }
     };
 
-    updateHeight();
-    window.visualViewport.addEventListener('resize', updateHeight);
-    window.visualViewport.addEventListener('scroll', updateHeight);
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateHeight);
-        window.visualViewport.removeEventListener('scroll', updateHeight);
-      }
-    };
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateKeyboardHeight);
+      updateKeyboardHeight();
+      return () => {
+        window.visualViewport?.removeEventListener('resize', updateKeyboardHeight);
+      };
+    }
   }, [isMobile]);
 
   if (isMobile) {
     return (
-      <div 
-        ref={containerRef}
-        className="basis-0 content-stretch flex flex-col grow min-h-px min-w-px relative shrink-0 w-full" 
-        style={{ 
-          height: viewportHeight ? `${viewportHeight}px` : '100%', 
-          display: 'flex', 
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
-      >
+      <div className="basis-0 content-stretch flex flex-col grow min-h-px min-w-px relative shrink-0 w-full" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Content area - takes available space, scrollable */}
-        <div className="flex-1 overflow-auto" style={{ flex: '1 1 0%', minHeight: 0 }}>
+        <div 
+          className="flex-1 overflow-auto" 
+          style={{ 
+            flex: '1 1 0%', 
+            minHeight: 0, 
+            paddingBottom: keyboardHeight > 0 ? `${160 + keyboardHeight}px` : '160px'
+          }}
+        >
           {showCodeGeneration && (
             <div className="h-full">
               <AiChatBox prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} messages={messages} isMobile={true} isWakingUp={isWakingUp} />
@@ -723,20 +732,22 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
             </div>
           )}
         </div>
-        {/* Input field pinned to bottom for mobile - always visible */}
+        {/* Input field fixed to bottom for mobile - always visible above keyboard */}
         <div 
-          className="shrink-0 mt-[12px]" 
-          style={{ 
-            flexShrink: 0,
-            position: 'sticky',
-            bottom: 0,
+          style={{
+            position: 'fixed',
+            bottom: keyboardHeight > 0 
+              ? `${keyboardHeight}px` 
+              : `calc(60px + max(0px, env(safe-area-inset-bottom)))`, // 60px for bottom nav + safe area
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            padding: '0 12px',
+            paddingBottom: `max(12px, calc(12px + env(safe-area-inset-bottom)))`,
             backgroundColor: '#212121',
-            zIndex: 20,
-            paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
-            marginBottom: 0
           }}
         >
-          <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />
+          <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} isMobile={true} />
         </div>
       </div>
     );

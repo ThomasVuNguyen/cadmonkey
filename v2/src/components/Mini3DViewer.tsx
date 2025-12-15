@@ -47,7 +47,7 @@ export default function Mini3DViewer({
 
     // Update model-viewer controls when controlsEnabled changes
     useEffect(() => {
-        if (modelViewerRef.current) {
+        if (modelViewerRef.current && modelUrl) {
             const viewer = modelViewerRef.current;
             if (controlsEnabled) {
                 viewer.setAttribute('camera-controls', '');
@@ -59,7 +59,7 @@ export default function Mini3DViewer({
                 viewer.setAttribute('interaction-policy', 'none');
             }
         }
-    }, [controlsEnabled]);
+    }, [controlsEnabled, modelUrl]);
 
     useEffect(() => {
         // Clear previous timeout
@@ -272,6 +272,8 @@ export default function Mini3DViewer({
                         position: 'relative',
                         cursor: disableControlsByDefault && !controlsEnabled ? 'pointer' : 'default',
                         touchAction: disableControlsByDefault && !controlsEnabled ? 'pan-y' : 'none',
+                        minHeight: '400px',
+                        backgroundColor: '#f5f5f5',
                     }}
                     onClick={(e) => {
                         if (disableControlsByDefault && !controlsEnabled) {
@@ -330,26 +332,55 @@ export default function Mini3DViewer({
                             Tap to interact
                         </div>
                     )}
-                    <model-viewer
-                        ref={modelViewerRef}
-                        src={modelUrl}
-                        orientation="0deg -90deg 0deg"
-                        camera-orbit={WORKSPACE_DEFAULT_ORBIT}
-                        environment-image="/skybox-lights.jpg"
-                        shadow-intensity="1"
-                        camera-controls={controlsEnabled}
-                        auto-rotate={controlsEnabled}
-                        interaction-policy={controlsEnabled ? 'allow-when-focused' : 'none'}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            minHeight: '0',
-                            flex: 1,
-                            pointerEvents: controlsEnabled ? 'auto' : 'none',
-                            touchAction: controlsEnabled ? 'none' : 'pan-y',
-                        }}
-                    >
-                    </model-viewer>
+                <model-viewer
+                    key={modelUrl}
+                    ref={modelViewerRef}
+                    src={modelUrl}
+                    alt="3D Model"
+                    orientation="0deg -90deg 0deg"
+                    camera-orbit="auto auto auto"
+                    environment-image="neutral"
+                    shadow-intensity="1"
+                    exposure="1"
+                    bounds="tight"
+                    camera-target="auto"
+                    field-of-view="auto"
+                    interaction-policy={controlsEnabled ? 'allow-when-focused' : 'none'}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '400px',
+                        flex: 1,
+                        pointerEvents: controlsEnabled ? 'auto' : 'none',
+                        touchAction: controlsEnabled ? 'none' : 'pan-y',
+                        display: 'block',
+                        backgroundColor: '#f5f5f5',
+                    }}
+                    onLoad={() => {
+                        console.log('✅ [model-viewer] Model loaded successfully, URL:', modelUrl);
+                        // Auto-fit the model after load - use multiple methods to ensure it works
+                        setTimeout(() => {
+                            if (modelViewerRef.current) {
+                                const viewer = modelViewerRef.current as any;
+                                // Ensure bounds are set
+                                viewer.setAttribute('bounds', 'tight');
+                                viewer.setAttribute('camera-orbit', 'auto auto auto');
+                                // Update framing to recalculate camera position
+                                if (viewer.updateFraming) {
+                                    viewer.updateFraming();
+                                }
+                            }
+                        }, 150);
+                    }}
+                    onError={(e: any) => {
+                        console.error('❌ [model-viewer] Load error:', e);
+                        setError('Failed to load 3D model');
+                    }}
+                >
+                    <div slot="poster" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#212121' }}></div>
+                    </div>
+                </model-viewer>
                 </div>
             )}
         </div>

@@ -114,9 +114,18 @@ self.addEventListener('message', async (e: MessageEvent<OpenSCADInvocation>) => 
         const end = performance.now();
         const elapsedMillis = end - start;
 
+        // Check exit code - non-zero usually means failure
+        if (exitCode !== 0 && exitCode !== undefined) {
+            throw new Error(`OpenSCAD exited with code ${exitCode}`);
+        }
+
         const outputs: [string, string][] = [];
         for (const path of (outputPaths ?? [])) {
             try {
+                // Check if file exists before trying to read
+                if (!instance.FS.analyzePath(path).exists) {
+                    throw new Error(`Output file ${path} does not exist`);
+                }
                 const content = instance.FS.readFile(path);
                 outputs.push([path, content]);
             } catch (e: any) {
