@@ -8,15 +8,12 @@ interface GalleryProps {
   onModelSelect?: (scadCode: string, prompt: string) => void;
 }
 
-type TabType = 'discover' | 'following' | 'latest';
-
 interface ValidatedModel extends ModelDocument {
   isValid?: boolean;
   validating?: boolean;
 }
 
 export default function Gallery({ onModelSelect }: GalleryProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('discover');
   const [models, setModels] = useState<ValidatedModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,48 +158,21 @@ export default function Gallery({ onModelSelect }: GalleryProps) {
   const validModelCount = models.filter(m => m.isValid === true).length;
   const totalLoadedCount = models.length;
 
+  const visibleModels = models.filter(modelDoc => {
+    if (modelDoc.validating) return false;
+    if (modelDoc.isValid === false) return false;
+    return true;
+  });
+
   return (
-    <div className="h-full bg-black overflow-y-auto">
-      {/* Navigation Tabs - Cara Style */}
-      <div className="sticky top-0 z-10 bg-black border-b border-gray-800">
-        <div className="flex items-center justify-center gap-8 py-4">
-          <button
-            onClick={() => setActiveTab('discover')}
-            className={`text-sm font-medium transition-colors ${
-              activeTab === 'discover'
-                ? 'text-white'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            Discover
-          </button>
-          <button
-            onClick={() => setActiveTab('following')}
-            className={`text-sm font-medium transition-colors ${
-              activeTab === 'following'
-                ? 'text-white'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            Following
-          </button>
-          <button
-            onClick={() => setActiveTab('latest')}
-            className={`text-sm font-medium transition-colors ${
-              activeTab === 'latest'
-                ? 'text-white'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            Latest
-          </button>
-        </div>
-        {/* Valid model count */}
+    <div className="gallery-shell">
+      <div className="gallery-nav">
         {validModelCount > 0 && (
-          <div className="text-center pb-2 text-gray-500 text-xs">
+          <div className="gallery-count">
             {validModelCount} valid {validModelCount === 1 ? 'model' : 'models'}
             {totalLoadedCount > validModelCount && (
-              <span className="ml-1">
+              <span className="gallery-count__muted">
+                {' '}
                 ({totalLoadedCount - validModelCount} hidden with errors)
               </span>
             )}
@@ -211,89 +181,68 @@ export default function Gallery({ onModelSelect }: GalleryProps) {
       </div>
 
       {error && (
-        <div className="bg-red-900/20 border border-red-700 text-red-300 px-4 py-3 m-4">
-          {error}
+        <div className="gallery-alert">{error}</div>
+      )}
+
+      <div className="gallery-grid">
+        {visibleModels.map((modelDoc, index) => {
+          const heights = ['220px', '260px', '300px', '340px', '280px', '310px'];
+          const height = heights[index % heights.length];
+
+          return (
+            <div
+              key={modelDoc.id}
+              className="gallery-card"
+            >
+              <div className="gallery-thumb" style={{ height }}>
+                <Mini3DViewer
+                  scadCode={modelDoc.scadCode}
+                  style={{
+                    minHeight: '0',
+                    height: '100%',
+                    backgroundColor: '#0d0d0f',
+                  }}
+                />
+                <button
+                  className="gallery-open-btn"
+                  type="button"
+                  onClick={() => handleModelClick(modelDoc)}
+                  aria-label="Open in workspace"
+                >
+                  Open
+                </button>
+                <div className="gallery-overlay">
+                  <p className="gallery-prompt">"{modelDoc.prompt}"</p>
+                  <p className="gallery-meta">{formatDate(modelDoc.createdAt)}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {models.some(m => m.validating) && (
+        <div className="gallery-info">
+          <span className="gallery-spinner" aria-hidden="true"></span>
+          <span>Validating models...</span>
         </div>
       )}
 
-      {/* Masonry Grid Layout - Cara Style */}
-      <div className="p-2">
-        <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-2">
-          {models
-            .filter(modelDoc => {
-              // Only show models that have been validated and are valid
-              // Hide models that are still validating or failed validation
-              if (modelDoc.validating) return false;
-              if (modelDoc.isValid === false) return false;
-              return true;
-            })
-            .map((modelDoc, index) => {
-              // Vary heights for masonry effect
-              const heights = ['200px', '250px', '300px', '350px', '280px', '320px'];
-              const height = heights[index % heights.length];
-
-              return (
-                <div
-                  key={modelDoc.id}
-                  className="break-inside-avoid mb-2 group cursor-pointer relative"
-                  onClick={() => handleModelClick(modelDoc)}
-                >
-                  {/* Image Container */}
-                  <div
-                    className="relative overflow-hidden bg-gray-900 rounded-sm"
-                    style={{ height }}
-                  >
-                    <Mini3DViewer
-                      scadCode={modelDoc.scadCode}
-                      thumbnail={modelDoc.thumbnailUrl}
-                    />
-
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-200 flex items-end p-3 opacity-0 group-hover:opacity-100">
-                      <div className="w-full">
-                        <p className="text-white text-xs leading-relaxed line-clamp-3 mb-1">
-                          "{modelDoc.prompt}"
-                        </p>
-                        <p className="text-gray-400 text-[10px]">
-                          {formatDate(modelDoc.createdAt)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-
-        {/* Validation in progress indicator */}
-        {models.some(m => m.validating) && (
-          <div className="text-center text-gray-500 text-sm py-4">
-            <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-              <span>Validating models...</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Load More Button - Cara Style */}
-      {hasMore && (
-        <div className="text-center py-8">
+      <div className="gallery-footer">
+        {hasMore ? (
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="bg-white text-black px-8 py-2 rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium text-sm"
+            className="gallery-button"
           >
             {loading ? 'Loading...' : 'Load More'}
           </button>
-        </div>
-      )}
-
-      {!hasMore && models.length > 0 && (
-        <div className="text-center text-gray-500 text-sm py-8">
-          No more models to load
-        </div>
-      )}
+        ) : (
+          models.length > 0 && (
+            <div className="gallery-info muted">No more models to load</div>
+          )
+        )}
+      </div>
     </div>
   );
 }

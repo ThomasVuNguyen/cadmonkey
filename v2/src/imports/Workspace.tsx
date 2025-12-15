@@ -171,11 +171,16 @@ function ButtonComponent1({ onClick, disabled }: { onClick: () => void; disabled
   );
 }
 
-function PublishMenu({ onDownload, disabled }: { onDownload: () => void; disabled: boolean }) {
+function DownloadCompact({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
   return (
-    <div className="content-stretch flex flex-col items-end relative shrink-0" data-name="Publish Menu">
-      <ButtonComponent1 onClick={onDownload} disabled={disabled} />
-    </div>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="bg-[#e9edff] border border-[#d5ddff] text-[#537cf7] content-stretch flex h-[28px] items-center justify-center px-3 relative rounded-[8px] shrink-0 text-sm font-medium hover:bg-[#dfe7ff] disabled:opacity-60 disabled:cursor-not-allowed"
+      aria-label="Download model"
+    >
+      Download
+    </button>
   );
 }
 
@@ -184,7 +189,7 @@ function ProjectActions({ onDownload, disabled }: { onDownload: () => void; disa
     <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Project Actions">
       <VersionBadge />
       <ButtonComponent />
-      <PublishMenu onDownload={onDownload} disabled={disabled} />
+      <DownloadCompact onClick={onDownload} disabled={disabled} />
     </div>
   );
 }
@@ -359,7 +364,7 @@ function Container({ prompt, setPrompt, handleGenerate, isLoading }: any) {
       <textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="what do you want to make?"
+        placeholder="type in an object name"
         disabled={isLoading}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
@@ -478,7 +483,7 @@ export default function Workspace() {
     }
 
     const userPrompt = prompt;
-    setMessages(prev => [...prev, { role: 'user', content: userPrompt }]);
+    setMessages([{ role: 'user', content: userPrompt }]);
     setPrompt(''); // Clear input
 
     setIsLoading(true);
@@ -622,7 +627,10 @@ export default function Workspace() {
           {activeView === 'workspace' ? (
             <Frame2 prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} scadCode={scadCode} messages={messages} />
           ) : (
-            <div className="basis-0 grow min-h-px min-w-px relative rounded-[16px] shrink-0 overflow-hidden">
+            <div
+              className="basis-0 grow min-h-px min-w-px relative rounded-[16px] shrink-0 overflow-hidden w-full"
+              style={{ height: 'calc(100vh - 140px)' }}
+            >
               <Gallery onModelSelect={handleModelSelect} />
             </div>
           )}
