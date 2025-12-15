@@ -271,6 +271,7 @@ export default function Mini3DViewer({
                         height: '100%',
                         position: 'relative',
                         cursor: disableControlsByDefault && !controlsEnabled ? 'pointer' : 'default',
+                        touchAction: disableControlsByDefault && !controlsEnabled ? 'pan-y' : 'none',
                     }}
                     onClick={(e) => {
                         if (disableControlsByDefault && !controlsEnabled) {
@@ -279,16 +280,33 @@ export default function Mini3DViewer({
                         }
                     }}
                     onTouchStart={(e) => {
-                        // Only enable on first touch if controls are disabled
                         if (disableControlsByDefault && !controlsEnabled) {
-                            setControlsEnabled(true);
-                            // Don't prevent default - let the model-viewer handle it once enabled
+                            // Store touch start position to detect tap vs scroll
+                            const touch = e.touches[0];
+                            (e.currentTarget as any)._touchStartX = touch.clientX;
+                            (e.currentTarget as any)._touchStartY = touch.clientY;
+                            (e.currentTarget as any)._touchStartTime = Date.now();
                         }
                     }}
-                    onTouchMove={(e) => {
-                        // Prevent scrolling when controls are disabled
+                    onTouchEnd={(e) => {
                         if (disableControlsByDefault && !controlsEnabled) {
-                            e.preventDefault();
+                            const touch = e.changedTouches[0];
+                            const startX = (e.currentTarget as any)._touchStartX;
+                            const startY = (e.currentTarget as any)._touchStartY;
+                            const startTime = (e.currentTarget as any)._touchStartTime;
+                            
+                            if (startX !== undefined && startY !== undefined && startTime !== undefined) {
+                                const deltaX = Math.abs(touch.clientX - startX);
+                                const deltaY = Math.abs(touch.clientY - startY);
+                                const deltaTime = Date.now() - startTime;
+                                
+                                // Only enable if it's a tap (small movement, short duration)
+                                if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+                                    setControlsEnabled(true);
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }
+                            }
                         }
                     }}
                 >
@@ -327,6 +345,8 @@ export default function Mini3DViewer({
                             height: '100%',
                             minHeight: '0',
                             flex: 1,
+                            pointerEvents: controlsEnabled ? 'auto' : 'none',
+                            touchAction: controlsEnabled ? 'none' : 'pan-y',
                         }}
                     >
                     </model-viewer>
