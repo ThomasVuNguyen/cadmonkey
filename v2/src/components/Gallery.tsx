@@ -197,6 +197,7 @@ export default function Gallery({ onModelSelect }: GalleryProps) {
               <div className="gallery-thumb" style={{ height }}>
                 <Mini3DViewer
                   scadCode={modelDoc.scadCode}
+                  disableControlsByDefault={true}
                   style={{
                     minHeight: '0',
                     height: '100%',

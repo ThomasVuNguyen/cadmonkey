@@ -15,6 +15,7 @@ declare global {
 interface Mini3DViewerProps {
     scadCode: string;
     style?: React.CSSProperties;
+    disableControlsByDefault?: boolean; // For Gallery: disable controls until user taps
 }
 
 const WORKSPACE_DEFAULT_ORBIT = `${Math.PI / 4}rad ${Math.PI / 4}rad auto`;
@@ -22,13 +23,16 @@ const WORKSPACE_DEFAULT_ORBIT = `${Math.PI / 4}rad ${Math.PI / 4}rad auto`;
 export default function Mini3DViewer({
     scadCode,
     style,
+    disableControlsByDefault = false,
 }: Mini3DViewerProps) {
     const [isRendering, setIsRendering] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [modelUrl, setModelUrl] = useState<string | null>(null);
+    const [controlsEnabled, setControlsEnabled] = useState(!disableControlsByDefault);
     const modelUrlRef = useRef<string | null>(null);
     const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const currentRenderRef = useRef<string>(''); // Track which code is being rendered
+    const modelViewerRef = useRef<any>(null);
 
     useEffect(() => {
         return () => {
@@ -40,6 +44,22 @@ export default function Mini3DViewer({
             }
         };
     }, []);
+
+    // Update model-viewer controls when controlsEnabled changes
+    useEffect(() => {
+        if (modelViewerRef.current) {
+            const viewer = modelViewerRef.current;
+            if (controlsEnabled) {
+                viewer.setAttribute('camera-controls', '');
+                viewer.setAttribute('auto-rotate', '');
+                viewer.setAttribute('interaction-policy', 'allow-when-focused');
+            } else {
+                viewer.removeAttribute('camera-controls');
+                viewer.removeAttribute('auto-rotate');
+                viewer.setAttribute('interaction-policy', 'none');
+            }
+        }
+    }, [controlsEnabled]);
 
     useEffect(() => {
         // Clear previous timeout
@@ -71,6 +91,10 @@ export default function Mini3DViewer({
             }
             setModelUrl(null);
             setError(null);
+            // Reset controls if they were disabled by default
+            if (disableControlsByDefault) {
+                setControlsEnabled(false);
+            }
         }
 
         let cancelled = false;
@@ -241,22 +265,72 @@ export default function Mini3DViewer({
 
             {/* 3D Model viewer */}
             {modelUrl && !error && (
-                <model-viewer
-                    src={modelUrl}
-                    orientation="0deg -90deg 0deg"
-                    camera-orbit={WORKSPACE_DEFAULT_ORBIT}
-                    environment-image="/skybox-lights.jpg"
-                    shadow-intensity="1"
-                    camera-controls
-                    auto-rotate
+                <div
                     style={{
                         width: '100%',
                         height: '100%',
-                        minHeight: '0',
-                        flex: 1,
+                        position: 'relative',
+                        cursor: disableControlsByDefault && !controlsEnabled ? 'pointer' : 'default',
+                    }}
+                    onClick={(e) => {
+                        if (disableControlsByDefault && !controlsEnabled) {
+                            setControlsEnabled(true);
+                            e.stopPropagation();
+                        }
+                    }}
+                    onTouchStart={(e) => {
+                        // Only enable on first touch if controls are disabled
+                        if (disableControlsByDefault && !controlsEnabled) {
+                            setControlsEnabled(true);
+                            // Don't prevent default - let the model-viewer handle it once enabled
+                        }
+                    }}
+                    onTouchMove={(e) => {
+                        // Prevent scrolling when controls are disabled
+                        if (disableControlsByDefault && !controlsEnabled) {
+                            e.preventDefault();
+                        }
                     }}
                 >
-                </model-viewer>
+                    {disableControlsByDefault && !controlsEnabled && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '8px',
+                                right: '8px',
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                color: '#F3F1E4',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                zIndex: 10,
+                                pointerEvents: 'none',
+                                backdropFilter: 'blur(4px)',
+                                fontWeight: 500,
+                            }}
+                        >
+                            Tap to interact
+                        </div>
+                    )}
+                    <model-viewer
+                        ref={modelViewerRef}
+                        src={modelUrl}
+                        orientation="0deg -90deg 0deg"
+                        camera-orbit={WORKSPACE_DEFAULT_ORBIT}
+                        environment-image="/skybox-lights.jpg"
+                        shadow-intensity="1"
+                        camera-controls={controlsEnabled}
+                        auto-rotate={controlsEnabled}
+                        interaction-policy={controlsEnabled ? 'allow-when-focused' : 'none'}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            minHeight: '0',
+                            flex: 1,
+                        }}
+                    >
+                    </model-viewer>
+                </div>
             )}
         </div>
     );
