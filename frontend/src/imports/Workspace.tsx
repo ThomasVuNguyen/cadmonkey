@@ -434,7 +434,7 @@ function Message1({ content, isWakingUp }: { content: string; isWakingUp?: boole
             <div 
               className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#F3F1E4] text-[14px] generating-pulse"
             >
-              {isWakingUp ? 'Waking up the AI model...' : 'Generating...'}
+              {isWakingUp ? 'Processing...' : 'Generating...'}
             </div>
           ) : (
           <div className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#F3F1E4] text-[14px]">
@@ -636,10 +636,10 @@ function AiChatInput({ prompt, setPrompt, handleGenerate, isLoading, isMobile }:
   );
 }
 
-function AiChatBox({ prompt, setPrompt, handleGenerate, isLoading, messages, isMobile }: any) {
+function AiChatBox({ prompt, setPrompt, handleGenerate, isLoading, messages, isMobile, isWakingUp }: any) {
   return (
     <div className={`content-stretch flex flex-col gap-[24px] ${isMobile ? 'h-full w-full' : 'h-full shrink-0 w-[500px]'} items-start p-[12px] relative`} data-name="AI Chat Box">
-      <Frame1 messages={messages} />
+      <Frame1 messages={messages} isWakingUp={isWakingUp} />
       {!isMobile && <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />}
     </div>
   );
@@ -783,11 +783,14 @@ export default function Workspace() {
     }
 
     const userPrompt = prompt;
-    setMessages([{ role: 'user', content: userPrompt }]);
+    setMessages([
+      { role: 'user', content: userPrompt },
+      { role: 'assistant', content: '' }
+    ]);
     setPrompt(''); // Clear input
 
     setIsLoading(true);
-    setIsWakingUp(true); // Start with "waking up" message
+    setIsWakingUp(true); // Start with processing message
     console.log("setIsLoading(true) called");
 
     try {
@@ -811,9 +814,6 @@ export default function Workspace() {
       const decoder = new TextDecoder();
       let generatedCode = '';
       let firstTokenReceived = false;
-
-      // Add a placeholder assistant message to stream into
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -868,6 +868,7 @@ export default function Workspace() {
       // alert('Generation failed: ' + err);
       setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]);
     } finally {
+      setIsWakingUp(false);
       setIsLoading(false);
     }
   };
