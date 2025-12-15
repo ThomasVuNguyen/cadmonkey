@@ -523,13 +523,47 @@ function ArrowUpward() {
 }
 
 function Container({ prompt, setPrompt, handleGenerate, isLoading }: any) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFocus = () => {
+    // Scroll input into view when focused (for mobile keyboard)
+    if (textareaRef.current) {
+      // Use requestAnimationFrame for better timing
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const textarea = textareaRef.current;
+          if (textarea) {
+            // Scroll the textarea into view
+            textarea.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'end',
+              inline: 'nearest'
+            });
+            
+            // Also ensure parent container scrolls if needed
+            const parent = textarea.closest('[style*="overflow"]') as HTMLElement;
+            if (parent) {
+              const rect = textarea.getBoundingClientRect();
+              const parentRect = parent.getBoundingClientRect();
+              if (rect.bottom > parentRect.bottom) {
+                parent.scrollTop += (rect.bottom - parentRect.bottom) + 20; // Add padding
+              }
+            }
+          }
+        }, 100); // Small delay to account for keyboard animation
+      });
+    }
+  };
+
   return (
     <div className="basis-0 content-stretch flex grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Container">
       <textarea
+        ref={textareaRef}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         placeholder="type in an object name"
         disabled={isLoading}
+        onFocus={handleFocus}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -639,10 +673,43 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
   // For mobile: show code generation first, then replace with 3D view when done
   const show3DView = isMobile && !isLoading && scadCode.trim();
   const showCodeGeneration = isMobile && (isLoading || !scadCode.trim());
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle visual viewport changes (keyboard show/hide) on mobile
+  useEffect(() => {
+    if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
+
+    const updateHeight = () => {
+      if (window.visualViewport) {
+        setViewportHeight(window.visualViewport.height);
+      }
+    };
+
+    updateHeight();
+    window.visualViewport.addEventListener('resize', updateHeight);
+    window.visualViewport.addEventListener('scroll', updateHeight);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateHeight);
+        window.visualViewport.removeEventListener('scroll', updateHeight);
+      }
+    };
+  }, [isMobile]);
 
   if (isMobile) {
     return (
-      <div className="basis-0 content-stretch flex flex-col grow min-h-px min-w-px relative shrink-0 w-full" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div 
+        ref={containerRef}
+        className="basis-0 content-stretch flex flex-col grow min-h-px min-w-px relative shrink-0 w-full" 
+        style={{ 
+          height: viewportHeight ? `${viewportHeight}px` : '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+      >
         {/* Content area - takes available space, scrollable */}
         <div className="flex-1 overflow-auto" style={{ flex: '1 1 0%', minHeight: 0 }}>
           {showCodeGeneration && (
@@ -657,7 +724,18 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
           )}
         </div>
         {/* Input field pinned to bottom for mobile - always visible */}
-        <div className="shrink-0 mt-[12px]" style={{ flexShrink: 0 }}>
+        <div 
+          className="shrink-0 mt-[12px]" 
+          style={{ 
+            flexShrink: 0,
+            position: 'sticky',
+            bottom: 0,
+            backgroundColor: '#212121',
+            zIndex: 20,
+            paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
+            marginBottom: 0
+          }}
+        >
           <AiChatInput prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} />
         </div>
       </div>
