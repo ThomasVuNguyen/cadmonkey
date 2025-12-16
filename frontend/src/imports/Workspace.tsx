@@ -487,7 +487,6 @@ const STREAM_URL = import.meta.env.VITE_API_URL || "/api/generate";
 
 // [Intermediate components with props]
 
-
 function AiChatMenu() {
   return <div className="content-stretch flex flex-col items-end shrink-0" data-name="AI Chat Menu" />;
 }
@@ -571,7 +570,7 @@ function Container({ prompt, setPrompt, handleGenerate, isLoading, isMobile }: a
         ref={textareaRef}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="type in an object name"
+        placeholder="type in an object name, like a cat, a dinosaur, or an ancient dragon"
         disabled={isLoading}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {

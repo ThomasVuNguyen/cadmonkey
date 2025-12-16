@@ -1,0 +1,200 @@
+}
+
+function Tabs({ activeView, onViewChange, isMobile }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, isMobile?: boolean }) {
+  return (
+    <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Tabs">
+      <TabGroupCompactPrimary activeView={activeView} onViewChange={onViewChange} isMobile={isMobile} />
+    </div>
+  );
+}
+
+function VersionBadge() {
+  return (
+    <div className="content-stretch flex items-center justify-center px-3 py-1 bg-[#3a3a3a] text-[#a0a0a0] text-xs font-medium rounded-full shrink-0">
+      {APP_VERSION}
+    </div>
+  );
+}
+
+function PrimaryButtonCompact({ onClick, disabled }: { onClick: () => void, disabled: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="bg-[#537CF7] content-stretch flex h-[28px] items-center justify-center px-3 relative rounded-[8px] shrink-0 text-white text-sm font-medium hover:bg-[#4568d4] disabled:opacity-50 disabled:cursor-not-allowed"
+      data-name="Primary Button Compact"
+      aria-label="Download model"
+    >
+      Download
+    </button>
+  );
+}
+
+function ButtonComponent1({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  return (
+    <div className="content-stretch flex items-start relative shrink-0" data-name="Button Component">
+      <PrimaryButtonCompact onClick={onClick} disabled={disabled} />
+    </div>
+  );
+}
+
+function DownloadCompact({ onDownload, disabled }: { onDownload: (format: 'stl' | 'glb' | '3mf' | 'off') => void; disabled: boolean }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMenu]);
+
+  const formats: Array<{ label: string; format: 'stl' | 'glb' | '3mf' | 'off' }> = [
+    { label: 'STL (3D printing)', format: 'stl' },
+    { label: 'GLB (web/AR)', format: 'glb' },
+    { label: '3MF (manufacturing)', format: '3mf' },
+    { label: 'OFF (geometry)', format: 'off' },
+  ];
+
+  return (
+    <div ref={menuRef} style={{ position: 'relative' }}>
+    <button
+        onClick={() => !disabled && setShowMenu(!showMenu)}
+      disabled={disabled}
+        style={{ 
+          backgroundColor: '#212121',
+          border: 'none',
+          backgroundImage: 'none',
+          display: 'flex',
+          width: '48px',
+          height: '48px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          flexShrink: 0,
+          transition: 'all 150ms ease-out',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          opacity: disabled ? 0.6 : 1,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2)'
+        }}
+      aria-label="Download model"
+        onMouseEnter={(e) => {
+          if (!disabled) {
+            e.currentTarget.style.backgroundColor = '#F86F54';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!disabled) {
+            e.currentTarget.style.backgroundColor = '#212121';
+            e.currentTarget.style.transform = 'scale(1)';
+          }
+        }}
+    >
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+          <path d="M8 2v8M5 7l3 3 3-3" stroke="#F3F1E4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M3 13h10" stroke="#F3F1E4" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+      </button>
+      {showMenu && !disabled && (
+        <div style={{
+          position: 'absolute',
+          bottom: '56px',
+          right: '0',
+          backgroundColor: '#2a2a2a',
+          border: '1px solid #3a3a3a',
+          borderRadius: '12px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+          minWidth: '200px',
+          zIndex: 1000,
+          overflow: 'hidden'
+        }}>
+          {formats.map((item) => (
+            <button
+              key={item.format}
+              onClick={() => {
+                onDownload(item.format);
+                setShowMenu(false);
+              }}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: '12px 16px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#f3f1e4',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'background-color 150ms ease-out',
+                borderBottom: formats.indexOf(item) < formats.length - 1 ? '1px solid rgba(243, 241, 228, 0.1)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#3a3a3a';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              {item.label}
+    </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectActions({ onDownload, disabled }: { onDownload: () => void; disabled: boolean }) {
+  return (
+    <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Project Actions">
+      {!disabled && <DownloadCompact onDownload={onDownload} disabled={disabled} />}
+    </div>
+  );
+}
+
+function RightSide({ activeView, onViewChange, onDownload, downloadDisabled }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, onDownload: () => void, downloadDisabled: boolean }) {
+  return (
+    <div className="basis-0 content-stretch flex grow items-center justify-end min-h-px min-w-px relative shrink-0 gap-[12px]" data-name="Right Side">
+      {/* Toggle removed - now separate from header */}
+    </div>
+  );
+}
+
+function WorkspaceHeader({ activeView, onViewChange, onDownload, downloadDisabled }: { activeView: 'workspace' | 'gallery', onViewChange: (view: 'workspace' | 'gallery') => void, onDownload: () => void, downloadDisabled: boolean }) {
+  return (
+    <div className="relative shrink-0" style={{ width: 'fit-content' }} data-name="Workspace Header">
+          <LeftSide />
+    </div>
+  );
+}
+
+function DateTime() {
+  return <div className="content-center flex flex-wrap items-center justify-center shrink-0 w-full" data-name="Date & Time" />;
+}
+
+function Message({ content }: { content: string }) {
+  return (
+    <div className="bg-[#2a2a2a] content-stretch flex items-center justify-end p-[12px] relative rounded-[12px] shrink-0 w-[326px]" data-name="Message">
+      <p className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#F3F1E4] text-[12px] text-right whitespace-pre-wrap">{content}</p>
+    </div>
+  );
+}
+
+function Copy() {
+  return (
+    <div className="relative shrink-0 size-[16px]" data-name="Copy">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+        <g id="Copy">
+          <path d={svgPaths.p15722080} fill="var(--fill-0, #60605E)" id="Shape" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
