@@ -461,8 +461,17 @@ function AiResponse({ content, isWakingUp }: { content: string; isWakingUp?: boo
 }
 
 function Frame1({ messages, isWakingUp }: { messages: { role: 'user' | 'assistant', content: string }[]; isWakingUp?: boolean }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages update
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <div className="basis-0 content-stretch flex flex-col gap-[24px] grow items-start min-h-px min-w-px overflow-x-clip overflow-y-auto relative shrink-0 w-full">
+    <div ref={scrollRef} className="basis-0 content-stretch flex flex-col gap-[24px] grow items-start min-h-px min-w-px overflow-x-clip overflow-y-auto relative shrink-0 w-full">
       <DateTime />
       {messages.map((msg, index) => (
         msg.role === 'user' ? (
@@ -647,8 +656,8 @@ function AiChatBox({ prompt, setPrompt, handleGenerate, isLoading, messages, isM
 function WorkspacePreview({ scadCode, isLoading, onDownload, downloadDisabled, isMobile }: any) {
   return (
     <div
-      className={`basis-0 bg-[#212121] grow ${isMobile ? 'min-h-[400px]' : 'min-h-[600px]'} min-w-px rounded-[16px] shrink-0 overflow-hidden flex flex-col`}
-      style={{ position: 'relative', flex: '1 1 0%' }}
+      className={`basis-0 bg-[#F5F5F5] grow min-w-px rounded-[16px] shrink-0 overflow-hidden flex flex-col`}
+      style={{ position: 'relative', flex: '1 1 0%', minHeight: 0 }}
       data-name="Workspace Preview"
     >
       <div aria-hidden="true" className="absolute border border-[rgba(243,241,228,0.15)] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[0px_4px_14px_0px_rgba(0,0,0,0.3),0px_4px_14px_0px_rgba(0,0,0,0.15)] z-0" />
@@ -658,12 +667,12 @@ function WorkspacePreview({ scadCode, isLoading, onDownload, downloadDisabled, i
           <div className="text-sm text-gray-300 font-medium">Generating Code...</div>
         </div>
       )}
-      <div className="flex-1 relative z-10" style={{ position: 'relative' }}>
+      <div className="flex-1 relative z-10" style={{ position: 'relative', minHeight: 0, height: '100%' }}>
         <Mini3DViewer scadCode={scadCode} />
         {!downloadDisabled && (
-          <div style={{ 
-            position: 'absolute', 
-            bottom: '24px', 
+          <div style={{
+            position: 'absolute',
+            bottom: '24px',
             right: '24px',
             top: 'auto',
             left: 'auto',
@@ -682,9 +691,24 @@ function WorkspacePreview({ scadCode, isLoading, onDownload, downloadDisabled, i
 
 function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messages, onDownload, downloadDisabled, isMobile, isWakingUp }: any) {
   // For mobile: show code generation first, then replace with 3D view when done
-  const show3DView = isMobile && !isLoading && scadCode.trim();
-  const showCodeGeneration = isMobile && (isLoading || !scadCode.trim());
+  const [showMobile3DView, setShowMobile3DView] = useState(false);
+  const show3DView = isMobile && showMobile3DView && scadCode.trim();
+  const showCodeGeneration = isMobile && !showMobile3DView;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Switch to 3D view after code generation completes
+  useEffect(() => {
+    if (isMobile && !isLoading && scadCode.trim()) {
+      // Wait a bit after loading completes to show the full generated code
+      const timer = setTimeout(() => {
+        setShowMobile3DView(true);
+      }, 1500); // 1.5 second delay to show completed code
+      return () => clearTimeout(timer);
+    } else if (isMobile && isLoading) {
+      // Reset when new generation starts
+      setShowMobile3DView(false);
+    }
+  }, [isMobile, isLoading, scadCode]);
 
   // Handle keyboard visibility on mobile
   useEffect(() => {
@@ -712,21 +736,28 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
     return (
       <div className="basis-0 content-stretch flex flex-col grow min-h-px min-w-px relative shrink-0 w-full" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Content area - takes available space, scrollable */}
-        <div 
-          className="flex-1 overflow-auto" 
-          style={{ 
-            flex: '1 1 0%', 
-            minHeight: 0, 
+        <div
+          className="flex-1 overflow-auto"
+          style={{
+            flex: '1 1 0%',
+            minHeight: 0,
             paddingBottom: keyboardHeight > 0 ? `${160 + keyboardHeight}px` : '160px'
           }}
         >
-          {showCodeGeneration && (
+          {!show3DView && (
             <div className="h-full">
               <AiChatBox prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} messages={messages} isMobile={true} isWakingUp={isWakingUp} />
             </div>
           )}
           {show3DView && (
-            <div className="h-full" style={{ minHeight: '400px' }}>
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              minHeight: '70vh',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
               <WorkspacePreview scadCode={scadCode} isLoading={isLoading} onDownload={onDownload} downloadDisabled={downloadDisabled} isMobile={true} />
             </div>
           )}
@@ -754,7 +785,7 @@ function Frame2({ prompt, setPrompt, handleGenerate, isLoading, scadCode, messag
 
   // Desktop layout: side-by-side
   return (
-    <div className="basis-0 content-stretch flex gap-[12px] grow items-center min-h-px min-w-px relative shrink-0 w-full">
+    <div className="basis-0 content-stretch flex gap-[12px] grow items-stretch min-h-px min-w-px relative shrink-0 w-full">
       <AiChatBox prompt={prompt} setPrompt={setPrompt} handleGenerate={handleGenerate} isLoading={isLoading} messages={messages} isWakingUp={isWakingUp} />
       <WorkspacePreview scadCode={scadCode} isLoading={isLoading} onDownload={onDownload} downloadDisabled={downloadDisabled} isMobile={false} />
     </div>

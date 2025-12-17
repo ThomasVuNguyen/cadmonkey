@@ -229,17 +229,14 @@ export default function Mini3DViewer({
     return (
         <div
             style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                minHeight: '600px',
-                backgroundColor: '#f5f5f5',
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: '#000000',
                 overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
                 ...style,
             }}
         >
+
             {/* Rendering state */}
             {isRendering && (
                 <div className="absolute inset-0 flex items-center justify-center z-10" style={{ backgroundColor: 'rgba(245, 245, 245, 0.95)' }}>
@@ -267,13 +264,11 @@ export default function Mini3DViewer({
             {modelUrl && !error && (
                 <div
                     style={{
-                        width: '100%',
-                        height: '100%',
-                        position: 'relative',
+                        position: 'absolute',
+                        inset: 0,
                         cursor: disableControlsByDefault && !controlsEnabled ? 'pointer' : 'default',
                         touchAction: disableControlsByDefault && !controlsEnabled ? 'pan-y' : 'none',
-                        minHeight: '400px',
-                        backgroundColor: '#f5f5f5',
+                        backgroundColor: '#000000',
                     }}
                     onClick={(e) => {
                         if (disableControlsByDefault && !controlsEnabled) {
@@ -296,12 +291,12 @@ export default function Mini3DViewer({
                             const startX = (e.currentTarget as any)._touchStartX;
                             const startY = (e.currentTarget as any)._touchStartY;
                             const startTime = (e.currentTarget as any)._touchStartTime;
-                            
+
                             if (startX !== undefined && startY !== undefined && startTime !== undefined) {
                                 const deltaX = Math.abs(touch.clientX - startX);
                                 const deltaY = Math.abs(touch.clientY - startY);
                                 const deltaTime = Date.now() - startTime;
-                                
+
                                 // Only enable if it's a tap (small movement, short duration)
                                 if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
                                     setControlsEnabled(true);
@@ -345,16 +340,16 @@ export default function Mini3DViewer({
                     bounds="tight"
                     camera-target="auto"
                     field-of-view="auto"
+                    camera-controls
+                    auto-rotate
                     interaction-policy={controlsEnabled ? 'allow-when-focused' : 'none'}
                     style={{
                         width: '100%',
                         height: '100%',
-                        minHeight: '400px',
-                        flex: 1,
                         pointerEvents: controlsEnabled ? 'auto' : 'none',
                         touchAction: controlsEnabled ? 'none' : 'pan-y',
                         display: 'block',
-                        backgroundColor: '#f5f5f5',
+                        backgroundColor: '#000000',
                     }}
                     onLoad={() => {
                         console.log('✅ [model-viewer] Model loaded successfully, URL:', modelUrl);
@@ -377,8 +372,8 @@ export default function Mini3DViewer({
                         setError('Failed to load 3D model');
                     }}
                 >
-                    <div slot="poster" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#212121' }}></div>
+                    <div slot="poster" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#ffffff' }}></div>
                     </div>
                 </model-viewer>
                 </div>
