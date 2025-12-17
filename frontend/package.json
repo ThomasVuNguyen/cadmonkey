@@ -1,6 +1,6 @@
 {
   "name": "cadmonkey",
-  "version": "0.2.39",
+  "version": "0.2.40",
   "private": true,
   "dependencies": {
     "@gltf-transform/core": "^4.2.1",
